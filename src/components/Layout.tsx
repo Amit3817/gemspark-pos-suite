@@ -1,6 +1,8 @@
 
 import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
+import { LanguageToggle } from "@/components/LanguageToggle";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { ReactNode } from "react";
 
 interface LayoutProps {
@@ -8,6 +10,8 @@ interface LayoutProps {
 }
 
 export default function Layout({ children }: LayoutProps) {
+  const { t } = useLanguage();
+
   return (
     <SidebarProvider>
       <div className="min-h-screen flex w-full bg-gray-50 touch-manipulation">
@@ -16,13 +20,14 @@ export default function Layout({ children }: LayoutProps) {
           <header className="h-16 border-b bg-white shadow-sm flex items-center px-4 md:px-6">
             <SidebarTrigger className="mr-4" />
             <div className="flex items-center space-x-2 md:space-x-4">
-              <h1 className="text-xl md:text-2xl font-bold text-primary">GemSpark POS</h1>
+              <h1 className="text-xl md:text-2xl font-bold text-primary">{t('header.title')}</h1>
               <div className="h-8 w-px bg-border hidden md:block"></div>
-              <span className="text-xs md:text-sm text-muted-foreground hidden md:block">Jewelry Store Management</span>
+              <span className="text-xs md:text-sm text-muted-foreground hidden md:block">{t('header.subtitle')}</span>
             </div>
             <div className="ml-auto flex items-center space-x-4">
+              <LanguageToggle />
               <div className="text-xs md:text-sm text-muted-foreground">
-                Welcome, Admin
+                {t('header.welcome')}
               </div>
             </div>
           </header>
