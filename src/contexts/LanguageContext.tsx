@@ -29,19 +29,55 @@ const translations = {
     'products.title': 'Product Catalog',
     'products.addNew': 'Add New Product',
     'products.search': 'Search products, categories, metals...',
-    'products.filterCategory': 'Filter by Category',
-    'products.filterMetal': 'Filter by Metal',
-    'products.category': 'Category',
-    'products.metal': 'Metal',
-    'products.gemstone': 'Gemstone',
-    'products.weight': 'Weight',
     'products.inStock': 'in stock',
-    'products.edit': 'Edit',
-    'products.addToSale': 'Add to Sale',
     'products.noProducts': 'No products found matching your search.',
-    'products.lowStock': 'Low Stock',
-    'products.medium': 'Medium',
-    'products.inStockBadge': 'In Stock',
+    
+    // Product Categories
+    'products.categories.all': 'All Categories',
+    'products.categories.rings': 'Rings',
+    'products.categories.necklaces': 'Necklaces',
+    'products.categories.earrings': 'Earrings',
+    'products.categories.bracelets': 'Bracelets',
+    'products.categories.pendants': 'Pendants',
+    
+    // Product Items
+    'products.items.diamondRing': 'Diamond Solitaire Ring',
+    'products.items.pearlNecklace': 'Pearl Necklace Set',
+    'products.items.emeraldEarrings': 'Emerald Earrings',
+    'products.items.silverBracelet': 'Silver Bracelet',
+    'products.items.rubyPendant': 'Ruby Pendant',
+    'products.items.weddingBand': 'Wedding Band Set',
+    'products.items.goldChain': 'Gold Chain',
+    'products.items.sapphireEarrings': 'Sapphire Earrings',
+    
+    // Metals
+    'products.metals.18kGold': '18K Gold',
+    'products.metals.22kGold': '22K Gold',
+    'products.metals.silver': 'Silver',
+    'products.metals.sterlingSilver': 'Sterling Silver',
+    'products.metals.platinum': 'Platinum',
+    
+    // Gemstones
+    'products.gemstones.diamond': 'Diamond',
+    'products.gemstones.pearl': 'Pearl',
+    'products.gemstones.emerald': 'Emerald',
+    'products.gemstones.ruby': 'Ruby',
+    'products.gemstones.sapphire': 'Sapphire',
+    
+    // Product Fields
+    'products.fields.category': 'Category',
+    'products.fields.metal': 'Metal',
+    'products.fields.gemstone': 'Gemstone',
+    'products.fields.weight': 'Weight',
+    
+    // Stock Status
+    'products.stockStatus.low': 'Low Stock',
+    'products.stockStatus.medium': 'Medium',
+    'products.stockStatus.inStock': 'In Stock',
+    
+    // Actions
+    'products.actions.edit': 'Edit',
+    'products.actions.addToSale': 'Add to Sale',
     
     // Common
     'common.none': 'None'
@@ -65,19 +101,55 @@ const translations = {
     'products.title': 'उत्पाद कैटलॉग',
     'products.addNew': 'नया उत्पाद जोड़ें',
     'products.search': 'उत्पाद, श्रेणी, धातु खोजें...',
-    'products.filterCategory': 'श्रेणी के अनुसार फ़िल्टर करें',
-    'products.filterMetal': 'धातु के अनुसार फ़िल्टर करें',
-    'products.category': 'श्रेणी',
-    'products.metal': 'धातु',
-    'products.gemstone': 'रत्न',
-    'products.weight': 'वजन',
     'products.inStock': 'स्टॉक में',
-    'products.edit': 'संपादित करें',
-    'products.addToSale': 'बिक्री में जोड़ें',
     'products.noProducts': 'आपकी खोज से मेल खाने वाले कोई उत्पाद नहीं मिले।',
-    'products.lowStock': 'कम स्टॉक',
-    'products.medium': 'मध्यम',
-    'products.inStockBadge': 'स्टॉक में',
+    
+    // Product Categories
+    'products.categories.all': 'सभी श्रेणियां',
+    'products.categories.rings': 'अंगूठियां',
+    'products.categories.necklaces': 'हार',
+    'products.categories.earrings': 'कान के कुंडल',
+    'products.categories.bracelets': 'कंगन',
+    'products.categories.pendants': 'लॉकेट',
+    
+    // Product Items
+    'products.items.diamondRing': 'हीरे की सॉलिटेयर अंगूठी',
+    'products.items.pearlNecklace': 'मोती का हार सेट',
+    'products.items.emeraldEarrings': 'पन्ना कुंडल',
+    'products.items.silverBracelet': 'चांदी का कंगन',
+    'products.items.rubyPendant': 'माणिक लॉकेट',
+    'products.items.weddingBand': 'शादी की अंगूठी सेट',
+    'products.items.goldChain': 'सोने की चेन',
+    'products.items.sapphireEarrings': 'नीलम कुंडल',
+    
+    // Metals
+    'products.metals.18kGold': '18 कैरेट सोना',
+    'products.metals.22kGold': '22 कैरेट सोना',
+    'products.metals.silver': 'चांदी',
+    'products.metals.sterlingSilver': 'स्टर्लिंग सिल्वर',
+    'products.metals.platinum': 'प्लेटिनम',
+    
+    // Gemstones
+    'products.gemstones.diamond': 'हीरा',
+    'products.gemstones.pearl': 'मोती',
+    'products.gemstones.emerald': 'पन्ना',
+    'products.gemstones.ruby': 'माणिक',
+    'products.gemstones.sapphire': 'नीलम',
+    
+    // Product Fields
+    'products.fields.category': 'श्रेणी',
+    'products.fields.metal': 'धातु',
+    'products.fields.gemstone': 'रत्न',
+    'products.fields.weight': 'वजन',
+    
+    // Stock Status
+    'products.stockStatus.low': 'कम स्टॉक',
+    'products.stockStatus.medium': 'मध्यम',
+    'products.stockStatus.inStock': 'स्टॉक में',
+    
+    // Actions
+    'products.actions.edit': 'संपादित करें',
+    'products.actions.addToSale': 'बिक्री में जोड़ें',
     
     // Common
     'common.none': 'कोई नहीं'
@@ -90,7 +162,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState<Language>('english');
 
   const t = (key: string): string => {
-    return translations[language][key as keyof typeof translations.english] || key;
+    const translation = translations[language][key as keyof typeof translations.english];
+    return translation || key;
   };
 
   return (
