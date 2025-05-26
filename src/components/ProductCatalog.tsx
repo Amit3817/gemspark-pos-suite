@@ -90,71 +90,77 @@ export default function ProductCatalog() {
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold text-primary">Product Catalog</h2>
-        <Button className="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-primary">
+    <div className="space-y-4 md:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <h2 className="text-2xl md:text-3xl font-bold text-primary">Product Catalog</h2>
+        <Button className="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-primary w-full sm:w-auto">
           Add New Product
         </Button>
       </div>
 
       {/* Search and Filters */}
-      <div className="flex space-x-4">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-4">
         <Input
           placeholder="Search products, categories, metals..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="max-w-md"
+          className="w-full sm:max-w-md"
         />
-        <Button variant="outline">Filter by Category</Button>
-        <Button variant="outline">Filter by Metal</Button>
+        <div className="flex gap-2 sm:gap-4">
+          <Button variant="outline" size="sm" className="flex-1 sm:flex-none">Filter by Category</Button>
+          <Button variant="outline" size="sm" className="flex-1 sm:flex-none">Filter by Metal</Button>
+        </div>
       </div>
 
-      {/* Products Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Products Grid - Responsive */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6">
         {filteredProducts.map((product) => (
-          <Card key={product.id} className="hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="flex items-start justify-between">
-                <div className="flex items-center space-x-3">
-                  <span className="text-3xl">{product.image}</span>
-                  <div>
-                    <CardTitle className="text-lg">{product.name}</CardTitle>
-                    <p className="text-sm text-muted-foreground">{product.id}</p>
+          <Card key={product.id} className="hover:shadow-lg transition-shadow flex flex-col">
+            <CardHeader className="pb-3">
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex items-center space-x-2 flex-1 min-w-0">
+                  <span className="text-2xl flex-shrink-0">{product.image}</span>
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className="text-base md:text-lg leading-tight truncate">{product.name}</CardTitle>
+                    <p className="text-xs md:text-sm text-muted-foreground">{product.id}</p>
                   </div>
                 </div>
-                {getStockBadge(product.stock)}
+                <div className="flex-shrink-0">
+                  {getStockBadge(product.stock)}
+                </div>
               </div>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                <div className="grid grid-cols-2 gap-2 text-sm">
-                  <div>
-                    <span className="font-medium">Category:</span>
-                    <p className="text-muted-foreground">{product.category}</p>
+            <CardContent className="pt-0 flex-1 flex flex-col">
+              <div className="space-y-3 flex-1">
+                <div className="grid grid-cols-1 gap-2 text-xs md:text-sm">
+                  <div className="flex justify-between">
+                    <span className="font-medium text-muted-foreground">Category:</span>
+                    <span className="text-right">{product.category}</span>
                   </div>
-                  <div>
-                    <span className="font-medium">Metal:</span>
-                    <p className="text-muted-foreground">{product.metal}</p>
+                  <div className="flex justify-between">
+                    <span className="font-medium text-muted-foreground">Metal:</span>
+                    <span className="text-right">{product.metal}</span>
                   </div>
-                  <div>
-                    <span className="font-medium">Gemstone:</span>
-                    <p className="text-muted-foreground">{product.gemstone}</p>
+                  <div className="flex justify-between">
+                    <span className="font-medium text-muted-foreground">Gemstone:</span>
+                    <span className="text-right">{product.gemstone}</span>
                   </div>
-                  <div>
-                    <span className="font-medium">Weight:</span>
-                    <p className="text-muted-foreground">{product.weight}</p>
+                  <div className="flex justify-between">
+                    <span className="font-medium text-muted-foreground">Weight:</span>
+                    <span className="text-right">{product.weight}</span>
                   </div>
                 </div>
                 
-                <div className="flex items-center justify-between pt-2 border-t">
-                  <div>
-                    <p className="text-2xl font-bold text-primary">{product.price}</p>
-                    <p className="text-sm text-muted-foreground">{product.stock} in stock</p>
-                  </div>
-                  <div className="flex space-x-2">
-                    <Button size="sm" variant="outline">Edit</Button>
-                    <Button size="sm">Add to Sale</Button>
+                <div className="pt-3 border-t mt-auto">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                    <div>
+                      <p className="text-lg md:text-xl font-bold text-primary">{product.price}</p>
+                      <p className="text-xs md:text-sm text-muted-foreground">{product.stock} in stock</p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button size="sm" variant="outline" className="flex-1 sm:flex-none">Edit</Button>
+                      <Button size="sm" className="flex-1 sm:flex-none">Add to Sale</Button>
+                    </div>
                   </div>
                 </div>
               </div>
