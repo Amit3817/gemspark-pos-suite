@@ -9,6 +9,7 @@ import Layout from "./components/Layout";
 import Dashboard from "./components/Dashboard";
 import ProductCatalog from "./components/ProductCatalog";
 import BillingSystem from "./components/BillingSystem";
+import Bills from "./components/Bills";
 import Inventory from "./components/Inventory";
 import Customers from "./components/Customers";
 import Reports from "./components/Reports";
@@ -29,6 +30,7 @@ const App = () => (
               <Route path="/" element={<Dashboard />} />
               <Route path="/products" element={<ProductCatalog />} />
               <Route path="/billing" element={<BillingSystem />} />
+              <Route path="/bills" element={<Bills />} />
               <Route path="/inventory" element={<Inventory />} />
               <Route path="/customers" element={<Customers />} />
               <Route path="/reports" element={<Reports />} />
