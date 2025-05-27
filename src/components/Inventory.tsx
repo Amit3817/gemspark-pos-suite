@@ -18,13 +18,13 @@ export default function Inventory() {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "critical":
-        return <Badge variant="destructive">Critical</Badge>;
+        return <Badge variant="destructive">{t('common.critical')}</Badge>;
       case "low":
         return <Badge variant="outline" className="border-yellow-500 text-yellow-600">{t('products.stockStatus.low')}</Badge>;
       case "adequate":
-        return <Badge variant="outline" className="border-green-500 text-green-600">Adequate</Badge>;
+        return <Badge variant="outline" className="border-green-500 text-green-600">{t('common.adequate')}</Badge>;
       default:
-        return <Badge variant="outline">Unknown</Badge>;
+        return <Badge variant="outline">{t('common.unknown')}</Badge>;
     }
   };
 
@@ -64,7 +64,7 @@ export default function Inventory() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Critical</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">{t('common.critical')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-red-600">{criticalItems}</div>
@@ -75,7 +75,7 @@ export default function Inventory() {
       {/* Inventory Items */}
       <Card>
         <CardHeader>
-          <CardTitle>Inventory Status</CardTitle>
+          <CardTitle>{t('inventory.status')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -91,11 +91,11 @@ export default function Inventory() {
                 <div className="flex items-center gap-4">
                   <div className="text-right">
                     <p className="font-bold">{item.currentStock}</p>
-                    <p className="text-xs text-muted-foreground">Current Stock</p>
+                    <p className="text-xs text-muted-foreground">{t('inventory.currentStock')}</p>
                   </div>
                   <div className="text-right">
                     <p className="text-sm">{item.minStock} - {item.maxStock}</p>
-                    <p className="text-xs text-muted-foreground">Min - Max</p>
+                    <p className="text-xs text-muted-foreground">{t('inventory.minMax')}</p>
                   </div>
                   <Button size="sm" variant="outline">{t('common.edit')}</Button>
                 </div>

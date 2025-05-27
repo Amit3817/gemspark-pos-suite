@@ -30,9 +30,9 @@ export default function Dashboard() {
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold text-primary">{t('dashboard.title')}</h2>
         <div className="flex space-x-3">
-          <Button variant="outline">{t('common.export')} Report</Button>
+          <Button variant="outline">{t('common.export')} {t('reports.title')}</Button>
           <Button className="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-primary">
-            New Sale
+            {t('customers.newSale')}
           </Button>
         </div>
       </div>
@@ -62,7 +62,7 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               {t('dashboard.recentSales')}
-              <Button variant="ghost" size="sm">{t('common.view')} All</Button>
+              <Button variant="ghost" size="sm">{t('common.view')} {t('common.all')}</Button>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -87,8 +87,8 @@ export default function Dashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              {t('dashboard.lowStock')} Alert
-              <Button variant="ghost" size="sm">Manage</Button>
+              {t('dashboard.lowStock')} {t('common.alert')}
+              <Button variant="ghost" size="sm">{t('common.manage')}</Button>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -100,9 +100,9 @@ export default function Dashboard() {
                     <p className="text-sm text-muted-foreground">{item.category}</p>
                   </div>
                   <div className="text-right">
-                    <p className="font-bold text-yellow-600">{item.stock} left</p>
+                    <p className="font-bold text-yellow-600">{item.stock} {t('common.left')}</p>
                     <Button size="sm" variant="outline" className="mt-1">
-                      Restock
+                      {t('inventory.restock')}
                     </Button>
                   </div>
                 </div>
@@ -115,25 +115,25 @@ export default function Dashboard() {
       {/* Quick Actions */}
       <Card>
         <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
+          <CardTitle>{t('common.quickActions')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Button variant="outline" className="h-20 flex flex-col space-y-2">
               <span className="text-2xl">💎</span>
-              <span>Add Product</span>
+              <span>{t('products.addNew')}</span>
             </Button>
             <Button variant="outline" className="h-20 flex flex-col space-y-2">
               <span className="text-2xl">👤</span>
-              <span>New Customer</span>
+              <span>{t('customers.addNew')}</span>
             </Button>
             <Button variant="outline" className="h-20 flex flex-col space-y-2">
               <span className="text-2xl">🧾</span>
-              <span>Generate Bill</span>
+              <span>{t('common.generateBill')}</span>
             </Button>
             <Button variant="outline" className="h-20 flex flex-col space-y-2">
               <span className="text-2xl">📊</span>
-              <span>View Reports</span>
+              <span>{t('common.viewReports')}</span>
             </Button>
           </div>
         </CardContent>

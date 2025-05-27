@@ -9,39 +9,39 @@ export default function Reports() {
   const reportTypes = [
     {
       title: t('reports.salesReport'),
-      description: "Daily, weekly, and monthly sales analysis",
+      description: t('reports.salesDescription'),
       icon: "📈",
-      period: "Last 30 days"
+      period: t('reports.last30Days')
     },
     {
       title: t('reports.inventoryReport'),
-      description: "Stock levels and inventory valuation",
+      description: t('reports.inventoryDescription'),
       icon: "📦",
-      period: "Current stock"
+      period: t('reports.currentStock')
     },
     {
       title: t('reports.customerReport'),
-      description: "Customer purchase patterns and preferences",
+      description: t('reports.customerDescription'),
       icon: "👥",
-      period: "Last 6 months"
+      period: t('reports.last6Months')
     },
     {
-      title: "GST Report",
-      description: "Tax calculations and compliance reports",
+      title: t('reports.gstReport'),
+      description: t('reports.gstDescription'),
       icon: "🧾",
-      period: "Financial year"
+      period: t('reports.financialYear')
     },
     {
-      title: "Profit Analysis",
-      description: "Margin analysis and profitability insights",
+      title: t('reports.profitAnalysis'),
+      description: t('reports.profitDescription'),
       icon: "💰",
-      period: "Quarterly"
+      period: t('reports.quarterly')
     },
     {
-      title: "Employee Performance",
-      description: "Staff sales performance and productivity",
+      title: t('reports.employeePerformance'),
+      description: t('reports.employeeDescription'),
       icon: "⭐",
-      period: "Monthly"
+      period: t('reports.monthly')
     }
   ];
 
@@ -57,7 +57,7 @@ export default function Reports() {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <h2 className="text-2xl md:text-3xl font-bold text-primary">{t('reports.title')}</h2>
         <Button className="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-primary w-full sm:w-auto">
-          {t('reports.custom')} Report
+          {t('reports.custom')} {t('reports.title')}
         </Button>
       </div>
 
@@ -105,7 +105,7 @@ export default function Reports() {
       {/* Recent Reports */}
       <Card>
         <CardHeader>
-          <CardTitle>Recent Reports</CardTitle>
+          <CardTitle>{t('reports.recentReports')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
@@ -121,8 +121,8 @@ export default function Reports() {
                   <p className="text-sm text-muted-foreground">{report.type} • {report.date} • {report.size}</p>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline">Download</Button>
-                  <Button size="sm" variant="outline">Share</Button>
+                  <Button size="sm" variant="outline">{t('common.download')}</Button>
+                  <Button size="sm" variant="outline">{t('common.share')}</Button>
                 </div>
               </div>
             ))}

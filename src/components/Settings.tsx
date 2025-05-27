@@ -9,42 +9,42 @@ export default function Settings() {
 
   const settingsSections = [
     {
-      title: "Store Information",
+      title: t('settings.storeInformation'),
       icon: "🏪",
       settings: [
         { label: t('settings.storeName'), value: "GemSpark Jewelry", type: "text" },
-        { label: "GST Number", value: "29XXXXX1234X1ZY", type: "text" },
+        { label: t('settings.gstNumber'), value: "29XXXXX1234X1ZY", type: "text" },
         { label: t('settings.storeAddress'), value: "123 Main Street, City", type: "text" },
         { label: t('settings.storePhone'), value: "+91 98765 43210", type: "tel" },
-        { label: "Email", value: "info@gemspark.com", type: "email" }
+        { label: t('settings.email'), value: "info@gemspark.com", type: "email" }
       ]
     },
     {
       title: t('settings.taxSettings'),
       icon: "🧾",
       settings: [
-        { label: "Invoice Prefix", value: "GSP", type: "text" },
+        { label: t('settings.invoicePrefix'), value: "GSP", type: "text" },
         { label: t('settings.defaultTax'), value: "3", type: "number" },
-        { label: "Making Charges (%)", value: "12", type: "number" },
-        { label: "Auto Generate Invoice", value: "Yes", type: "select" }
+        { label: t('settings.makingCharges'), value: "12", type: "number" },
+        { label: t('settings.autoGenerateInvoice'), value: "Yes", type: "select" }
       ]
     },
     {
-      title: "WhatsApp Integration",
+      title: t('settings.whatsappIntegration'),
       icon: "📱",
       settings: [
-        { label: "WhatsApp Number", value: "+91 98765 43210", type: "tel" },
-        { label: "Auto Send Bills", value: "Yes", type: "select" },
-        { label: "Message Template", value: "Custom", type: "text" }
+        { label: t('settings.whatsappNumber'), value: "+91 98765 43210", type: "tel" },
+        { label: t('settings.autoSendBills'), value: "Yes", type: "select" },
+        { label: t('settings.messageTemplate'), value: "Custom", type: "text" }
       ]
     },
     {
-      title: "Security",
+      title: t('settings.security'),
       icon: "🔐",
       settings: [
-        { label: "Admin Password", value: "••••••••", type: "password" },
-        { label: "Session Timeout (mins)", value: "30", type: "number" },
-        { label: "Two Factor Auth", value: "Disabled", type: "select" }
+        { label: t('settings.adminPassword'), value: "••••••••", type: "password" },
+        { label: t('settings.sessionTimeout'), value: "30", type: "number" },
+        { label: t('settings.twoFactorAuth'), value: "Disabled", type: "select" }
       ]
     }
   ];
@@ -54,7 +54,7 @@ export default function Settings() {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <h2 className="text-2xl md:text-3xl font-bold text-primary">{t('settings.title')}</h2>
         <div className="flex gap-2">
-          <Button variant="outline" className="flex-1 sm:flex-none">Reset to Default</Button>
+          <Button variant="outline" className="flex-1 sm:flex-none">{t('settings.resetToDefault')}</Button>
           <Button className="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-primary flex-1 sm:flex-none">
             {t('settings.save')}
           </Button>
@@ -86,7 +86,7 @@ export default function Settings() {
                   </div>
                 ))}
                 <Button size="sm" variant="outline" className="w-full mt-4">
-                  Update {section.title}
+                  {t('settings.update')} {section.title}
                 </Button>
               </div>
             </CardContent>
@@ -97,7 +97,7 @@ export default function Settings() {
       {/* Quick Actions */}
       <Card>
         <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
+          <CardTitle>{t('common.quickActions')}</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -111,11 +111,11 @@ export default function Settings() {
             </Button>
             <Button variant="outline" className="h-20 flex flex-col space-y-2">
               <span className="text-2xl">🔄</span>
-              <span className="text-sm">Sync Settings</span>
+              <span className="text-sm">{t('settings.syncSettings')}</span>
             </Button>
             <Button variant="outline" className="h-20 flex flex-col space-y-2">
               <span className="text-2xl">❓</span>
-              <span className="text-sm">Help & Support</span>
+              <span className="text-sm">{t('settings.helpSupport')}</span>
             </Button>
           </div>
         </CardContent>
