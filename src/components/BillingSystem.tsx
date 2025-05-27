@@ -14,7 +14,7 @@ export default function BillingSystem() {
   const [cartItems, setCartItems] = useState([
     {
       id: "PRD-001",
-      name: "Diamond Solitaire Ring",
+      name: t('products.items.diamondRing'),
       price: 45000,
       quantity: 1,
       gst: 3
@@ -46,8 +46,8 @@ export default function BillingSystem() {
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold text-primary">{t('nav.billing')}</h2>
         <div className="flex space-x-3">
-          <Button variant="outline">Load Draft</Button>
-          <Button variant="outline">{t('common.save')} Draft</Button>
+          <Button variant="outline">{t('billing.loadDraft')}</Button>
+          <Button variant="outline">{t('common.save')} {t('billing.draft')}</Button>
         </div>
       </div>
 
@@ -56,7 +56,7 @@ export default function BillingSystem() {
         <div className="lg:col-span-2 space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Add Products</CardTitle>
+              <CardTitle>{t('billing.addProducts')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex space-x-4">
@@ -71,7 +71,7 @@ export default function BillingSystem() {
                 <Button variant="outline" size="sm">💚 {t('products.categories.earrings')}</Button>
                 <Button variant="outline" size="sm">🔗 {t('products.categories.bracelets')}</Button>
                 <Button variant="outline" size="sm">❤️ {t('products.categories.pendants')}</Button>
-                <Button variant="outline" size="sm">💎 Sets</Button>
+                <Button variant="outline" size="sm">💎 {t('billing.sets')}</Button>
               </div>
             </CardContent>
           </Card>
@@ -79,11 +79,11 @@ export default function BillingSystem() {
           {/* Cart Items */}
           <Card>
             <CardHeader>
-              <CardTitle>Cart Items</CardTitle>
+              <CardTitle>{t('billing.cartItems')}</CardTitle>
             </CardHeader>
             <CardContent>
               {cartItems.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">No items in cart</p>
+                <p className="text-muted-foreground text-center py-8">{t('billing.noItemsInCart')}</p>
               ) : (
                 <div className="space-y-4">
                   {cartItems.map((item) => (
@@ -134,7 +134,7 @@ export default function BillingSystem() {
           {/* Customer Info */}
           <Card>
             <CardHeader>
-              <CardTitle>Customer Information</CardTitle>
+              <CardTitle>{t('billing.customerInformation')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
@@ -143,7 +143,7 @@ export default function BillingSystem() {
                   id="customer-name"
                   value={customerInfo.name}
                   onChange={(e) => setCustomerInfo({...customerInfo, name: e.target.value})}
-                  placeholder="Customer name"
+                  placeholder={t('billing.customerNamePlaceholder')}
                 />
               </div>
               <div>
@@ -152,17 +152,17 @@ export default function BillingSystem() {
                   id="customer-phone"
                   value={customerInfo.phone}
                   onChange={(e) => setCustomerInfo({...customerInfo, phone: e.target.value})}
-                  placeholder="Phone number"
+                  placeholder={t('billing.phoneNumberPlaceholder')}
                 />
               </div>
               <div>
-                <Label htmlFor="customer-email">{t('customers.email')} (Optional)</Label>
+                <Label htmlFor="customer-email">{t('customers.email')} ({t('billing.optional')})</Label>
                 <Input
                   id="customer-email"
                   type="email"
                   value={customerInfo.email}
                   onChange={(e) => setCustomerInfo({...customerInfo, email: e.target.value})}
-                  placeholder="Email address"
+                  placeholder={t('billing.emailAddressPlaceholder')}
                 />
               </div>
             </CardContent>
@@ -171,21 +171,21 @@ export default function BillingSystem() {
           {/* Bill Summary */}
           <Card>
             <CardHeader>
-              <CardTitle>Bill Summary</CardTitle>
+              <CardTitle>{t('billing.billSummary')}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <div className="flex justify-between">
-                  <span>Subtotal:</span>
+                  <span>{t('billing.subtotal')}:</span>
                   <span>₹{subtotal.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>GST (3%):</span>
+                  <span>{t('billing.gst')} (3%):</span>
                   <span>₹{gstAmount.toLocaleString()}</span>
                 </div>
                 <Separator />
                 <div className="flex justify-between font-bold text-lg">
-                  <span>Total:</span>
+                  <span>{t('billing.total')}:</span>
                   <span>₹{total.toLocaleString()}</span>
                 </div>
               </div>
@@ -200,20 +200,20 @@ export default function BillingSystem() {
                     <SelectItem value="cash">{t('bills.payment.cash')}</SelectItem>
                     <SelectItem value="card">{t('bills.payment.card')}</SelectItem>
                     <SelectItem value="upi">{t('bills.payment.upi')}</SelectItem>
-                    <SelectItem value="cheque">Cheque</SelectItem>
+                    <SelectItem value="cheque">{t('billing.cheque')}</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-3 pt-4">
                 <Button className="w-full bg-green-600 hover:bg-green-700">
-                  Complete Sale
+                  {t('billing.completeSale')}
                 </Button>
                 <Button variant="outline" className="w-full">
-                  Send via WhatsApp
+                  {t('billing.sendViaWhatsApp')}
                 </Button>
                 <Button variant="outline" className="w-full">
-                  Print Receipt
+                  {t('billing.printReceipt')}
                 </Button>
               </div>
             </CardContent>
