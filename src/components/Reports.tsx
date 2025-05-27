@@ -52,6 +52,13 @@ export default function Reports() {
     { label: t('reports.thisYear'), value: "₹89,45,670", change: "+22.1%" }
   ];
 
+  const recentReports = [
+    { name: t('sampleData.reports.monthlySales'), date: "2024-01-01", type: t('sampleData.reportTypes.sales'), size: "2.4 MB" },
+    { name: t('sampleData.reports.inventoryValuation'), date: "2023-12-28", type: t('sampleData.reportTypes.inventory'), size: "1.8 MB" },
+    { name: t('sampleData.reports.gstSummary'), date: "2023-12-25", type: t('sampleData.reportTypes.tax'), size: "892 KB" },
+    { name: t('sampleData.reports.customerAnalysis'), date: "2023-12-20", type: t('sampleData.reportTypes.customer'), size: "3.1 MB" }
+  ];
+
   return (
     <div className="space-y-4 md:space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
@@ -109,12 +116,7 @@ export default function Reports() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {[
-              { name: "Monthly Sales Report - December 2024", date: "2024-01-01", type: "Sales", size: "2.4 MB" },
-              { name: "Inventory Valuation Report", date: "2023-12-28", type: "Inventory", size: "1.8 MB" },
-              { name: "GST Summary - Q4 2023", date: "2023-12-25", type: "Tax", size: "892 KB" },
-              { name: "Customer Analysis Report", date: "2023-12-20", type: "Customer", size: "3.1 MB" }
-            ].map((report, index) => (
+            {recentReports.map((report, index) => (
               <div key={index} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 border rounded-lg gap-3">
                 <div className="flex-1">
                   <h4 className="font-medium">{report.name}</h4>

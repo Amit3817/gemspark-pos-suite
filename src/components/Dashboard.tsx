@@ -14,15 +14,15 @@ export default function Dashboard() {
   ];
 
   const recentSales = [
-    { id: "INV-001", customer: "Priya Sharma", amount: "₹12,500", time: "10:30 AM" },
-    { id: "INV-002", customer: "Rajesh Kumar", amount: "₹8,750", time: "11:15 AM" },
-    { id: "INV-003", customer: "Anita Desai", amount: "₹25,000", time: "12:45 PM" },
+    { id: "INV-001", customer: t('sampleData.customers.priyaSharma'), amount: "₹12,500", time: "10:30 AM" },
+    { id: "INV-002", customer: t('sampleData.customers.rajeshKumar'), amount: "₹8,750", time: "11:15 AM" },
+    { id: "INV-003", customer: t('sampleData.customers.anitaDesai'), amount: "₹25,000", time: "12:45 PM" },
   ];
 
   const lowStockItems = [
-    { name: "Gold Ring 18K", stock: 3, category: "Rings" },
-    { name: "Diamond Earrings", stock: 1, category: "Earrings" },
-    { name: "Silver Bracelet", stock: 5, category: "Bracelets" },
+    { name: t('sampleData.items.goldRing18K'), stock: 3, category: t('sampleData.categories.rings') },
+    { name: t('sampleData.items.diamondEarrings'), stock: 1, category: t('sampleData.categories.earrings') },
+    { name: t('sampleData.items.silverBracelet'), stock: 5, category: t('sampleData.categories.bracelets') },
   ];
 
   return (

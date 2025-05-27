@@ -14,7 +14,7 @@ interface LanguageContextType {
 const translations = {
   english: englishTranslations,
   hindi: hindiTranslations
-};
+} as const;
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
@@ -26,8 +26,14 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     return translation || key;
   };
 
+  const value = {
+    language,
+    setLanguage,
+    t
+  };
+
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, t }}>
+    <LanguageContext.Provider value={value}>
       {children}
     </LanguageContext.Provider>
   );

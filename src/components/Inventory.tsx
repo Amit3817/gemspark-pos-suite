@@ -8,11 +8,11 @@ export default function Inventory() {
   const { t } = useLanguage();
 
   const inventoryItems = [
-    { id: "INV-001", name: "Gold Rings", category: "Rings", currentStock: 45, minStock: 20, maxStock: 100, status: "adequate" },
-    { id: "INV-002", name: "Diamond Earrings", category: "Earrings", currentStock: 8, minStock: 15, maxStock: 50, status: "low" },
-    { id: "INV-003", name: "Silver Necklaces", category: "Necklaces", currentStock: 32, minStock: 25, maxStock: 75, status: "adequate" },
-    { id: "INV-004", name: "Pearl Sets", category: "Sets", currentStock: 3, minStock: 10, maxStock: 30, status: "critical" },
-    { id: "INV-005", name: "Platinum Bands", category: "Rings", currentStock: 67, minStock: 20, maxStock: 80, status: "adequate" },
+    { id: "INV-001", name: t('sampleData.items.goldRings'), category: t('sampleData.categories.rings'), currentStock: 45, minStock: 20, maxStock: 100, status: "adequate" },
+    { id: "INV-002", name: t('sampleData.items.diamondEarrings'), category: t('sampleData.categories.earrings'), currentStock: 8, minStock: 15, maxStock: 50, status: "low" },
+    { id: "INV-003", name: t('sampleData.items.silverNecklaces'), category: t('sampleData.categories.necklaces'), currentStock: 32, minStock: 25, maxStock: 75, status: "adequate" },
+    { id: "INV-004", name: t('sampleData.items.pearlSets'), category: t('sampleData.categories.sets'), currentStock: 3, minStock: 10, maxStock: 30, status: "critical" },
+    { id: "INV-005", name: t('sampleData.items.platinumBands'), category: t('sampleData.categories.rings'), currentStock: 67, minStock: 20, maxStock: 80, status: "adequate" },
   ];
 
   const getStatusBadge = (status: string) => {
