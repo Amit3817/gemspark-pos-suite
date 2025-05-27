@@ -55,6 +55,7 @@ const translations = {
     'customers.status.vip': 'VIP',
     'customers.status.regular': 'Regular',
     'customers.status.new': 'New',
+    'customers.customerName': 'Customer Name',
     
     // Bills
     'bills.title': 'Bills Management',
@@ -104,6 +105,7 @@ const translations = {
     'reports.today': 'Today',
     'reports.thisWeek': 'This Week',
     'reports.thisMonth': 'This Month',
+    'reports.thisQuarter': 'This Quarter',
     'reports.thisYear': 'This Year',
     'reports.custom': 'Custom Range',
     
@@ -116,7 +118,7 @@ const translations = {
     'settings.currency': 'Currency',
     'settings.taxSettings': 'Tax Settings',
     'settings.defaultTax': 'Default Tax Rate',
-    'settings.backup': 'Backup & Restore',
+    'settings.backup': 'Backup Data',
     'settings.exportData': 'Export Data',
     'settings.importData': 'Import Data',
     'settings.save': 'Save Settings',
@@ -231,6 +233,7 @@ const translations = {
     'customers.status.vip': 'वीआईपी',
     'customers.status.regular': 'नियमित',
     'customers.status.new': 'नया',
+    'customers.customerName': 'ग्राहक का नाम',
     
     // Bills
     'bills.title': 'बिल प्रबंधन',
@@ -280,6 +283,7 @@ const translations = {
     'reports.today': 'आज',
     'reports.thisWeek': 'इस सप्ताह',
     'reports.thisMonth': 'इस महीने',
+    'reports.thisQuarter': 'इस तिमाही',
     'reports.thisYear': 'इस वर्ष',
     'reports.custom': 'कस्टम रेंज',
     
@@ -292,7 +296,7 @@ const translations = {
     'settings.currency': 'मुद्रा',
     'settings.taxSettings': 'कर सेटिंग्स',
     'settings.defaultTax': 'डिफ़ॉल्ट कर दर',
-    'settings.backup': 'बैकअप और पुनर्स्थापना',
+    'settings.backup': 'बैकअप डेटा',
     'settings.exportData': 'डेटा निर्यात करें',
     'settings.importData': 'डेटा आयात करें',
     'settings.save': 'सेटिंग्स सहेजें',

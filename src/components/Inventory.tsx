@@ -2,8 +2,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Inventory() {
+  const { t } = useLanguage();
+
   const inventoryItems = [
     { id: "INV-001", name: "Gold Rings", category: "Rings", currentStock: 45, minStock: 20, maxStock: 100, status: "adequate" },
     { id: "INV-002", name: "Diamond Earrings", category: "Earrings", currentStock: 8, minStock: 15, maxStock: 50, status: "low" },
@@ -17,7 +20,7 @@ export default function Inventory() {
       case "critical":
         return <Badge variant="destructive">Critical</Badge>;
       case "low":
-        return <Badge variant="outline" className="border-yellow-500 text-yellow-600">Low Stock</Badge>;
+        return <Badge variant="outline" className="border-yellow-500 text-yellow-600">{t('products.stockStatus.low')}</Badge>;
       case "adequate":
         return <Badge variant="outline" className="border-green-500 text-green-600">Adequate</Badge>;
       default:
@@ -32,11 +35,11 @@ export default function Inventory() {
   return (
     <div className="space-y-4 md:space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <h2 className="text-2xl md:text-3xl font-bold text-primary">Inventory Management</h2>
+        <h2 className="text-2xl md:text-3xl font-bold text-primary">{t('inventory.title')}</h2>
         <div className="flex gap-2">
-          <Button variant="outline" className="flex-1 sm:flex-none">Import Stock</Button>
+          <Button variant="outline" className="flex-1 sm:flex-none">{t('settings.importData')}</Button>
           <Button className="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-primary flex-1 sm:flex-none">
-            Add Item
+            {t('inventory.addNew')}
           </Button>
         </div>
       </div>
@@ -45,7 +48,7 @@ export default function Inventory() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Total Items</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">{t('inventory.totalItems')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalItems}</div>
@@ -53,7 +56,7 @@ export default function Inventory() {
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">Low Stock</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">{t('inventory.lowStockItems')}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-yellow-600">{lowStockItems}</div>
@@ -94,7 +97,7 @@ export default function Inventory() {
                     <p className="text-sm">{item.minStock} - {item.maxStock}</p>
                     <p className="text-xs text-muted-foreground">Min - Max</p>
                   </div>
-                  <Button size="sm" variant="outline">Update</Button>
+                  <Button size="sm" variant="outline">{t('common.edit')}</Button>
                 </div>
               </div>
             ))}

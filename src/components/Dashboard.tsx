@@ -1,13 +1,16 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Dashboard() {
+  const { t } = useLanguage();
+
   const stats = [
-    { title: "Today's Sales", value: "₹45,230", change: "+12.5%", color: "text-green-600" },
-    { title: "Total Items", value: "1,247", change: "+3.2%", color: "text-blue-600" },
-    { title: "Low Stock", value: "23", change: "+5 items", color: "text-yellow-600" },
-    { title: "Customers", value: "892", change: "+8.1%", color: "text-purple-600" },
+    { title: t('dashboard.todaySales'), value: "₹45,230", change: "+12.5%", color: "text-green-600" },
+    { title: t('dashboard.totalProducts'), value: "1,247", change: "+3.2%", color: "text-blue-600" },
+    { title: t('dashboard.lowStock'), value: "23", change: "+5 items", color: "text-yellow-600" },
+    { title: t('dashboard.totalCustomers'), value: "892", change: "+8.1%", color: "text-purple-600" },
   ];
 
   const recentSales = [
@@ -25,9 +28,9 @@ export default function Dashboard() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold text-primary">Dashboard</h2>
+        <h2 className="text-3xl font-bold text-primary">{t('dashboard.title')}</h2>
         <div className="flex space-x-3">
-          <Button variant="outline">Export Report</Button>
+          <Button variant="outline">{t('common.export')} Report</Button>
           <Button className="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-primary">
             New Sale
           </Button>
@@ -58,8 +61,8 @@ export default function Dashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              Recent Sales
-              <Button variant="ghost" size="sm">View All</Button>
+              {t('dashboard.recentSales')}
+              <Button variant="ghost" size="sm">{t('common.view')} All</Button>
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -84,7 +87,7 @@ export default function Dashboard() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
-              Low Stock Alert
+              {t('dashboard.lowStock')} Alert
               <Button variant="ghost" size="sm">Manage</Button>
             </CardTitle>
           </CardHeader>

@@ -6,8 +6,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function BillingSystem() {
+  const { t } = useLanguage();
+
   const [cartItems, setCartItems] = useState([
     {
       id: "PRD-001",
@@ -41,10 +44,10 @@ export default function BillingSystem() {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold text-primary">Billing System</h2>
+        <h2 className="text-3xl font-bold text-primary">{t('nav.billing')}</h2>
         <div className="flex space-x-3">
           <Button variant="outline">Load Draft</Button>
-          <Button variant="outline">Save Draft</Button>
+          <Button variant="outline">{t('common.save')} Draft</Button>
         </div>
       </div>
 
@@ -57,17 +60,17 @@ export default function BillingSystem() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="flex space-x-4">
-                <Input placeholder="Search products..." className="flex-1" />
-                <Button>Search</Button>
+                <Input placeholder={t('products.search')} className="flex-1" />
+                <Button>{t('common.search')}</Button>
               </div>
               
               {/* Quick Add Buttons */}
               <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
-                <Button variant="outline" size="sm">💍 Rings</Button>
-                <Button variant="outline" size="sm">📿 Necklaces</Button>
-                <Button variant="outline" size="sm">💚 Earrings</Button>
-                <Button variant="outline" size="sm">🔗 Bracelets</Button>
-                <Button variant="outline" size="sm">❤️ Pendants</Button>
+                <Button variant="outline" size="sm">💍 {t('products.categories.rings')}</Button>
+                <Button variant="outline" size="sm">📿 {t('products.categories.necklaces')}</Button>
+                <Button variant="outline" size="sm">💚 {t('products.categories.earrings')}</Button>
+                <Button variant="outline" size="sm">🔗 {t('products.categories.bracelets')}</Button>
+                <Button variant="outline" size="sm">❤️ {t('products.categories.pendants')}</Button>
                 <Button variant="outline" size="sm">💎 Sets</Button>
               </div>
             </CardContent>
@@ -115,7 +118,7 @@ export default function BillingSystem() {
                           variant="destructive"
                           onClick={() => removeItem(item.id)}
                         >
-                          Remove
+                          {t('common.delete')}
                         </Button>
                       </div>
                     </div>
@@ -135,7 +138,7 @@ export default function BillingSystem() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <Label htmlFor="customer-name">Name</Label>
+                <Label htmlFor="customer-name">{t('customers.customerName')}</Label>
                 <Input
                   id="customer-name"
                   value={customerInfo.name}
@@ -144,7 +147,7 @@ export default function BillingSystem() {
                 />
               </div>
               <div>
-                <Label htmlFor="customer-phone">Phone</Label>
+                <Label htmlFor="customer-phone">{t('customers.phone')}</Label>
                 <Input
                   id="customer-phone"
                   value={customerInfo.phone}
@@ -153,7 +156,7 @@ export default function BillingSystem() {
                 />
               </div>
               <div>
-                <Label htmlFor="customer-email">Email (Optional)</Label>
+                <Label htmlFor="customer-email">{t('customers.email')} (Optional)</Label>
                 <Input
                   id="customer-email"
                   type="email"
@@ -188,15 +191,15 @@ export default function BillingSystem() {
               </div>
 
               <div className="space-y-2">
-                <Label>Payment Method</Label>
+                <Label>{t('bills.paymentMethod')}</Label>
                 <Select defaultValue="cash">
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="cash">Cash</SelectItem>
-                    <SelectItem value="card">Card</SelectItem>
-                    <SelectItem value="upi">UPI</SelectItem>
+                    <SelectItem value="cash">{t('bills.payment.cash')}</SelectItem>
+                    <SelectItem value="card">{t('bills.payment.card')}</SelectItem>
+                    <SelectItem value="upi">{t('bills.payment.upi')}</SelectItem>
                     <SelectItem value="cheque">Cheque</SelectItem>
                   </SelectContent>
                 </Select>

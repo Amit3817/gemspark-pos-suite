@@ -1,23 +1,26 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Reports() {
+  const { t } = useLanguage();
+
   const reportTypes = [
     {
-      title: "Sales Report",
+      title: t('reports.salesReport'),
       description: "Daily, weekly, and monthly sales analysis",
       icon: "📈",
       period: "Last 30 days"
     },
     {
-      title: "Inventory Report",
+      title: t('reports.inventoryReport'),
       description: "Stock levels and inventory valuation",
       icon: "📦",
       period: "Current stock"
     },
     {
-      title: "Customer Report",
+      title: t('reports.customerReport'),
       description: "Customer purchase patterns and preferences",
       icon: "👥",
       period: "Last 6 months"
@@ -43,18 +46,18 @@ export default function Reports() {
   ];
 
   const quickStats = [
-    { label: "Today's Sales", value: "₹45,230", change: "+12.5%" },
-    { label: "This Month", value: "₹8,45,670", change: "+8.2%" },
-    { label: "This Quarter", value: "₹24,56,890", change: "+15.6%" },
-    { label: "This Year", value: "₹89,45,670", change: "+22.1%" }
+    { label: t('dashboard.todaySales'), value: "₹45,230", change: "+12.5%" },
+    { label: t('reports.thisMonth'), value: "₹8,45,670", change: "+8.2%" },
+    { label: t('reports.thisQuarter'), value: "₹24,56,890", change: "+15.6%" },
+    { label: t('reports.thisYear'), value: "₹89,45,670", change: "+22.1%" }
   ];
 
   return (
     <div className="space-y-4 md:space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-        <h2 className="text-2xl md:text-3xl font-bold text-primary">Reports & Analytics</h2>
+        <h2 className="text-2xl md:text-3xl font-bold text-primary">{t('reports.title')}</h2>
         <Button className="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-primary w-full sm:w-auto">
-          Custom Report
+          {t('reports.custom')} Report
         </Button>
       </div>
 
@@ -91,8 +94,8 @@ export default function Reports() {
             <CardContent>
               <p className="text-sm text-muted-foreground mb-4">{report.description}</p>
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" className="flex-1">View</Button>
-                <Button size="sm" className="flex-1">Generate</Button>
+                <Button size="sm" variant="outline" className="flex-1">{t('common.view')}</Button>
+                <Button size="sm" className="flex-1">{t('reports.generateReport')}</Button>
               </div>
             </CardContent>
           </Card>
