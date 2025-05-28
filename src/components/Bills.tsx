@@ -4,138 +4,76 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useQuery } from "@tanstack/react-query";
+import { googleSheetsApi, Bill } from "@/services/googleSheetsApi";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Bills() {
   const [searchTerm, setSearchTerm] = useState("");
   const { t } = useLanguage();
+  const { toast } = useToast();
 
-  const bills = [
-    {
-      id: "BILL-001",
-      customerName: "Priya Sharma",
-      phone: "+91 98765 43210",
-      amount: "₹45,000",
-      date: "2024-01-15",
-      items: 2,
-      paymentMethod: "Card",
-      status: "Paid"
-    },
-    {
-      id: "BILL-002",
-      customerName: "Rajesh Kumar",
-      phone: "+91 87654 32109",
-      amount: "₹18,500",
-      date: "2024-01-14",
-      items: 1,
-      paymentMethod: "UPI",
-      status: "Paid"
-    },
-    {
-      id: "BILL-003",
-      customerName: "Anita Desai",
-      phone: "+91 76543 21098",
-      amount: "₹32,000",
-      date: "2024-01-13",
-      items: 1,
-      paymentMethod: "Cash",
-      status: "Paid"
-    },
-    {
-      id: "BILL-004",
-      customerName: "Suresh Patel",
-      phone: "+91 65432 10987",
-      amount: "₹8,750",
-      date: "2024-01-12",
-      items: 1,
-      paymentMethod: "Card",
-      status: "Pending"
-    },
-    {
-      id: "BILL-005",
-      customerName: "Meera Reddy",
-      phone: "+91 54321 09876",
-      amount: "₹28,500",
-      date: "2024-01-11",
-      items: 1,
-      paymentMethod: "UPI",
-      status: "Paid"
-    },
-    {
-      id: "BILL-006",
-      customerName: "Vikram Singh",
-      phone: "+91 43210 98765",
-      amount: "₹65,000",
-      date: "2024-01-10",
-      items: 2,
-      paymentMethod: "Cash",
-      status: "Paid"
-    },
-    {
-      id: "BILL-007",
-      customerName: "Sita Rao",
-      phone: "+91 32109 87654",
-      amount: "₹35,200",
-      date: "2024-01-09",
-      items: 1,
-      paymentMethod: "Card",
-      status: "Paid"
-    },
-    {
-      id: "BILL-008",
-      customerName: "Arjun Gupta",
-      phone: "+91 21098 76543",
-      amount: "₹29,800",
-      date: "2024-01-08",
-      items: 1,
-      paymentMethod: "UPI",
-      status: "Paid"
+  const { data: bills = [], isLoading, error, refetch } = useQuery({
+    queryKey: ['bills'],
+    queryFn: googleSheetsApi.getAllBills,
+  });
+
+  useEffect(() => {
+    if (error) {
+      console.error('Error loading bills:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load bills from Google Sheets",
+        variant: "destructive",
+      });
     }
-  ];
+  }, [error, toast]);
 
-  const filteredBills = bills.filter(bill =>
-    bill.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    bill.customerName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    bill.phone.includes(searchTerm) ||
-    bill.date.includes(searchTerm)
+  const filteredBills = bills.filter((bill: Bill) =>
+    bill["Bill No"].toLowerCase().includes(searchTerm.toLowerCase()) ||
+    bill["Customer Name"].toLowerCase().includes(searchTerm.toLowerCase()) ||
+    bill["Phone Number"].includes(searchTerm) ||
+    bill["Date"].toString().includes(searchTerm)
   );
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "Paid":
-        return <Badge className="bg-green-100 text-green-800 border-green-200">{t('bills.status.paid')}</Badge>;
-      case "Pending":
-        return <Badge className="bg-yellow-100 text-yellow-800 border-yellow-200">{t('bills.status.pending')}</Badge>;
-      default:
-        return <Badge variant="outline">Unknown</Badge>;
-    }
+  const getStatusBadge = (status: string = "Paid") => {
+    return <Badge className="bg-green-100 text-green-800 border-green-200">{t('bills.status.paid')}</Badge>;
   };
 
-  const getPaymentMethodText = (method: string) => {
-    switch (method) {
-      case "Cash":
-        return t('bills.payment.cash');
-      case "Card":
-        return t('bills.payment.card');
-      case "UPI":
-        return t('bills.payment.upi');
-      default:
-        return method;
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString();
+    } catch {
+      return dateString;
     }
   };
 
   const totalBills = bills.length;
-  const totalRevenue = bills.reduce((sum, bill) => {
-    const amount = parseInt(bill.amount.replace(/[₹,]/g, ''));
-    return sum + amount;
+  const totalRevenue = bills.reduce((sum: number, bill: Bill) => {
+    return sum + (bill["Total Amount"] || 0);
   }, 0);
-  const averageBill = Math.round(totalRevenue / totalBills);
+  const averageBill = totalBills > 0 ? Math.round(totalRevenue / totalBills) : 0;
+
+  if (isLoading) {
+    return (
+      <div className="space-y-4 md:space-y-6">
+        <div className="flex justify-center items-center py-12">
+          <p className="text-muted-foreground">Loading bills...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4 md:space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <h2 className="text-2xl md:text-3xl font-bold text-primary">{t('bills.title')}</h2>
+        <Button variant="outline" onClick={() => refetch()}>
+          Refresh Data
+        </Button>
       </div>
 
       {/* Stats Cards */}
@@ -191,28 +129,28 @@ export default function Bills() {
                   <TableHead className="hidden md:table-cell">{t('bills.phone')}</TableHead>
                   <TableHead>{t('bills.amount')}</TableHead>
                   <TableHead className="hidden sm:table-cell">{t('bills.date')}</TableHead>
-                  <TableHead className="hidden lg:table-cell">{t('bills.items')}</TableHead>
-                  <TableHead className="hidden lg:table-cell">{t('bills.paymentMethod')}</TableHead>
+                  <TableHead className="hidden lg:table-cell">Product</TableHead>
+                  <TableHead className="hidden lg:table-cell">Metal Type</TableHead>
                   <TableHead>{t('bills.status')}</TableHead>
                   <TableHead className="text-right">{t('common.view')}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredBills.map((bill) => (
-                  <TableRow key={bill.id} className="hover:bg-muted/50">
-                    <TableCell className="font-medium">{bill.id}</TableCell>
+                {filteredBills.map((bill: Bill) => (
+                  <TableRow key={bill["Bill No"]} className="hover:bg-muted/50">
+                    <TableCell className="font-medium">{bill["Bill No"]}</TableCell>
                     <TableCell>
                       <div>
-                        <div className="font-medium">{bill.customerName}</div>
-                        <div className="text-sm text-muted-foreground md:hidden">{bill.phone}</div>
+                        <div className="font-medium">{bill["Customer Name"]}</div>
+                        <div className="text-sm text-muted-foreground md:hidden">{bill["Phone Number"]}</div>
                       </div>
                     </TableCell>
-                    <TableCell className="hidden md:table-cell">{bill.phone}</TableCell>
-                    <TableCell className="font-bold text-primary">{bill.amount}</TableCell>
-                    <TableCell className="hidden sm:table-cell">{bill.date}</TableCell>
-                    <TableCell className="hidden lg:table-cell">{bill.items}</TableCell>
-                    <TableCell className="hidden lg:table-cell">{getPaymentMethodText(bill.paymentMethod)}</TableCell>
-                    <TableCell>{getStatusBadge(bill.status)}</TableCell>
+                    <TableCell className="hidden md:table-cell">{bill["Phone Number"]}</TableCell>
+                    <TableCell className="font-bold text-primary">₹{bill["Total Amount"]?.toLocaleString()}</TableCell>
+                    <TableCell className="hidden sm:table-cell">{formatDate(bill["Date"])}</TableCell>
+                    <TableCell className="hidden lg:table-cell">{bill["Product Name"]}</TableCell>
+                    <TableCell className="hidden lg:table-cell">{bill["Metal Type"]}</TableCell>
+                    <TableCell>{getStatusBadge()}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Button size="sm" variant="outline" className="text-xs">
@@ -231,7 +169,7 @@ export default function Bills() {
         </CardContent>
       </Card>
 
-      {filteredBills.length === 0 && (
+      {filteredBills.length === 0 && !isLoading && (
         <div className="text-center py-12">
           <p className="text-muted-foreground">{t('bills.noBills')}</p>
         </div>
