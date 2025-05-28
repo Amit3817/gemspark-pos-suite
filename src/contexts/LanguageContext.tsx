@@ -22,8 +22,13 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const [language, setLanguage] = useState<Language>('english');
 
   const t = (key: string): string => {
-    const translation = translations[language][key as keyof typeof translations.english];
-    return translation || key;
+    try {
+      const translation = translations[language][key as keyof typeof translations.english];
+      return translation || key;
+    } catch (error) {
+      console.warn(`Translation not found for key: ${key}`);
+      return key;
+    }
   };
 
   const value = {
