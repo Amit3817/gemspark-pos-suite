@@ -61,7 +61,7 @@ export default function Dashboard() {
       <Card className="border-2 border-yellow-300 shadow-lg">
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-xl">
-            💎 {t('dashboard.marketPrices')}
+            📈 {t('dashboard.marketPrices')}
             <Badge variant="secondary" className="ml-auto animate-pulse">LIVE</Badge>
           </CardTitle>
         </CardHeader>
@@ -176,7 +176,7 @@ export default function Dashboard() {
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Button variant="outline" className="h-20 flex flex-col space-y-2">
-              <span className="text-2xl">💎</span>
+              <span className="text-2xl">💍</span>
               <span>{t('products.addNew')}</span>
             </Button>
             <Button variant="outline" className="h-20 flex flex-col space-y-2">
