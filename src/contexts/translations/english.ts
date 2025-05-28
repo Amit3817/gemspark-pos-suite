@@ -1,3 +1,4 @@
+
 export const englishTranslations = {
   // Header
   'header.title': 'GemSpark POS',
@@ -209,7 +210,7 @@ export const englishTranslations = {
   'products.categories.pendants': 'Pendants',
   
   // Product Items
-  'products.items.diamondRing': 'Diamond Solitaire Ring',
+  'products.items.goldRing': 'Gold Ring',
   'products.items.pearlNecklace': 'Pearl Necklace Set',
   'products.items.emeraldEarrings': 'Emerald Earrings',
   'products.items.silverBracelet': 'Silver Bracelet',
@@ -226,7 +227,6 @@ export const englishTranslations = {
   'products.metals.platinum': 'Platinum',
   
   // Gemstones
-  'products.gemstones.diamond': 'Diamond',
   'products.gemstones.pearl': 'Pearl',
   'products.gemstones.emerald': 'Emerald',
   'products.gemstones.ruby': 'Ruby',
@@ -252,7 +252,7 @@ export const englishTranslations = {
   'sampleData.customers.rajeshKumar': 'Rajesh Kumar',
   'sampleData.customers.anitaDesai': 'Anita Desai',
   'sampleData.items.goldRing18K': 'Gold Ring 18K',
-  'sampleData.items.diamondEarrings': 'Diamond Earrings',
+  'sampleData.items.emeraldEarrings': 'Emerald Earrings',
   'sampleData.items.silverBracelet': 'Silver Bracelet',
   'sampleData.items.goldRings': 'Gold Rings',
   'sampleData.items.silverNecklaces': 'Silver Necklaces',

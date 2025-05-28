@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,12 +22,12 @@ export default function ProductCatalog() {
   const products = [
     {
       id: "PRD-001",
-      name: t('products.items.diamondRing'),
+      name: t('products.items.goldRing'),
       category: "Rings",
       metal: t('products.metals.18kGold'),
-      gemstone: t('products.gemstones.diamond'),
+      gemstone: t('products.gemstones.ruby'),
       weight: "3.2g",
-      price: "₹45,000",
+      price: "₹35,000",
       stock: 12,
       image: "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=300&h=300&fit=crop"
     },
@@ -81,7 +80,7 @@ export default function ProductCatalog() {
       name: t('products.items.weddingBand'),
       category: "Rings",
       metal: t('products.metals.platinum'),
-      gemstone: t('products.gemstones.diamond'),
+      gemstone: t('common.none'),
       weight: "8.7g",
       price: "₹65,000",
       stock: 10,

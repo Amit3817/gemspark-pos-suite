@@ -41,7 +41,7 @@ export default function Dashboard() {
 
   const lowStockItems = [
     { name: t('sampleData.items.goldRing18K'), stock: 3, category: t('sampleData.categories.rings') },
-    { name: t('sampleData.items.diamondEarrings'), stock: 1, category: t('sampleData.categories.earrings') },
+    { name: t('sampleData.items.emeraldEarrings'), stock: 1, category: t('sampleData.categories.earrings') },
     { name: t('sampleData.items.silverBracelet'), stock: 5, category: t('sampleData.categories.bracelets') },
   ];
 

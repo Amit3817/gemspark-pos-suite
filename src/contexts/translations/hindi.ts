@@ -43,6 +43,11 @@ export const hindiTranslations = {
   'dashboard.generateBill': 'बिल बनाएं',
   'dashboard.viewReports': 'रिपोर्ट देखें',
   'dashboard.manageInventory': 'इन्वेंटरी प्रबंधन',
+  'dashboard.marketPrices': 'लाइव मार्केट भाव',
+  'dashboard.goldPrice': 'सोने का भाव',
+  'dashboard.silverPrice': 'चांदी का भाव',
+  'dashboard.per10Grams': 'प्रति 10 ग्राम',
+  'dashboard.lastUpdated': 'अंतिम अपडेट',
   
   // Customers
   'customers.title': 'ग्राहक प्रबंधन',
@@ -205,7 +210,7 @@ export const hindiTranslations = {
   'products.categories.pendants': 'लॉकेट',
   
   // Product Items
-  'products.items.diamondRing': 'हीरे की सॉलिटेयर अंगूठी',
+  'products.items.goldRing': 'सोने की अंगूठी',
   'products.items.pearlNecklace': 'मोती का हार सेट',
   'products.items.emeraldEarrings': 'पन्ना कुंडल',
   'products.items.silverBracelet': 'चांदी का कंगन',
@@ -222,7 +227,6 @@ export const hindiTranslations = {
   'products.metals.platinum': 'प्लेटिनम',
   
   // Gemstones
-  'products.gemstones.diamond': 'हीरा',
   'products.gemstones.pearl': 'मोती',
   'products.gemstones.emerald': 'पन्ना',
   'products.gemstones.ruby': 'माणिक',
@@ -248,7 +252,7 @@ export const hindiTranslations = {
   'sampleData.customers.rajeshKumar': 'राजेश कुमार',
   'sampleData.customers.anitaDesai': 'अनीता देसाई',
   'sampleData.items.goldRing18K': 'गोल्ड रिंग 18K',
-  'sampleData.items.diamondEarrings': 'हीरे की बालियां',
+  'sampleData.items.emeraldEarrings': 'पन्ना की बालियां',
   'sampleData.items.silverBracelet': 'चांदी का कंगन',
   'sampleData.items.goldRings': 'सोने की अंगूठियां',
   'sampleData.items.silverNecklaces': 'चांदी के हार',

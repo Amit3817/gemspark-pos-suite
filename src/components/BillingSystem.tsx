@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -14,8 +13,8 @@ export default function BillingSystem() {
   const [cartItems, setCartItems] = useState([
     {
       id: "PRD-001",
-      name: t('products.items.diamondRing'),
-      price: 45000,
+      name: t('products.items.goldRing'),
+      price: 35000,
       quantity: 1,
       gst: 3
     }
