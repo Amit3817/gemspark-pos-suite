@@ -5,6 +5,16 @@ export const englishTranslations = {
   'header.subtitle': 'Jewelry Store Management',
   'header.welcome': 'Welcome, Admin',
   
+  // Navigation/Sidebar
+  'sidebar.dashboard': 'Dashboard',
+  'sidebar.products': 'Products',
+  'sidebar.inventory': 'Inventory',
+  'sidebar.billing': 'Billing',
+  'sidebar.customers': 'Customers',
+  'sidebar.reports': 'Reports',
+  'sidebar.settings': 'Settings',
+  'sidebar.mainMenu': 'Main Menu',
+  
   // Navigation
   'nav.dashboard': 'Dashboard',
   'nav.products': 'Products',

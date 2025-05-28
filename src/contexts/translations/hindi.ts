@@ -1,9 +1,19 @@
 
 export const hindiTranslations = {
   // Header
-  'header.title': 'जेमस्पार्क पीओएस',
-  'header.subtitle': 'आभूषण स्टोर प्रबंधन',
-  'header.welcome': 'स्वागत है, एडमिन',
+  'header.title': 'GemSpark POS',
+  'header.subtitle': 'आभूषण दुकान प्रबंधन',
+  'header.welcome': 'स्वागत है, प्रशासक',
+  
+  // Navigation/Sidebar
+  'sidebar.dashboard': 'डैशबोर्ड',
+  'sidebar.products': 'उत्पाद',
+  'sidebar.inventory': 'इन्वेंटरी',
+  'sidebar.billing': 'बिलिंग',
+  'sidebar.customers': 'ग्राहक',
+  'sidebar.reports': 'रिपोर्ट',
+  'sidebar.settings': 'सेटिंग्स',
+  'sidebar.mainMenu': 'मुख्य मेनू',
   
   // Navigation
   'nav.dashboard': 'डैशबोर्ड',

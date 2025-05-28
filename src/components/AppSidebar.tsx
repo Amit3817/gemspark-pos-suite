@@ -12,22 +12,24 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@/components/ui/sidebar";
-
-const menuItems = [
-  { title: "Dashboard", url: "/", icon: "📊" },
-  { title: "Products", url: "/products", icon: "💎" },
-  { title: "Inventory", url: "/inventory", icon: "📦" },
-  { title: "Billing", url: "/billing", icon: "🧾" },
-  { title: "Customers", url: "/customers", icon: "👥" },
-  { title: "Reports", url: "/reports", icon: "📈" },
-  { title: "Settings", url: "/settings", icon: "⚙️" },
-];
+import { useLanguage } from "@/contexts/LanguageContext";
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const location = useLocation();
+  const { t } = useLanguage();
   const currentPath = location.pathname;
   const collapsed = state === "collapsed";
+
+  const menuItems = [
+    { title: t('sidebar.dashboard'), url: "/", icon: "📊" },
+    { title: t('sidebar.products'), url: "/products", icon: "💎" },
+    { title: t('sidebar.inventory'), url: "/inventory", icon: "📦" },
+    { title: t('sidebar.billing'), url: "/billing", icon: "🧾" },
+    { title: t('sidebar.customers'), url: "/customers", icon: "👥" },
+    { title: t('sidebar.reports'), url: "/reports", icon: "📈" },
+    { title: t('sidebar.settings'), url: "/settings", icon: "⚙️" },
+  ];
 
   const isActive = (path: string) => {
     if (path === "/") return currentPath === "/";
@@ -58,7 +60,7 @@ export function AppSidebar() {
 
         <SidebarGroup>
           <SidebarGroupLabel className="text-sidebar-foreground/70">
-            {!collapsed && "Main Menu"}
+            {!collapsed && t('sidebar.mainMenu')}
           </SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
