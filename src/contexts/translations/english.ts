@@ -1,4 +1,3 @@
-
 export const englishTranslations = {
   // Header
   'header.title': 'GemSpark POS',
@@ -43,6 +42,11 @@ export const englishTranslations = {
   'dashboard.generateBill': 'Generate Bill',
   'dashboard.viewReports': 'View Reports',
   'dashboard.manageInventory': 'Manage Inventory',
+  'dashboard.marketPrices': 'Live Market Prices',
+  'dashboard.goldPrice': 'Gold Price',
+  'dashboard.silverPrice': 'Silver Price',
+  'dashboard.per10Grams': 'per 10 grams',
+  'dashboard.lastUpdated': 'Last Updated',
   
   // Customers
   'customers.title': 'Customer Management',

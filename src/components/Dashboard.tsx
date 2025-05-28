@@ -1,6 +1,7 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 
 export default function Dashboard() {
@@ -11,6 +12,25 @@ export default function Dashboard() {
     { title: t('dashboard.totalProducts'), value: "1,247", change: "+3.2%", color: "text-blue-600" },
     { title: t('dashboard.lowStock'), value: "23", change: "+5 items", color: "text-yellow-600" },
     { title: t('dashboard.totalCustomers'), value: "892", change: "+8.1%", color: "text-purple-600" },
+  ];
+
+  const marketPrices = [
+    { 
+      metal: t('dashboard.goldPrice'), 
+      price: "₹6,890", 
+      change: "+2.3%", 
+      changeColor: "text-green-600",
+      bgColor: "bg-gradient-to-r from-yellow-100 to-yellow-200",
+      icon: "🟡"
+    },
+    { 
+      metal: t('dashboard.silverPrice'), 
+      price: "₹850", 
+      change: "-1.2%", 
+      changeColor: "text-red-600",
+      bgColor: "bg-gradient-to-r from-gray-100 to-gray-200",
+      icon: "⚪"
+    }
   ];
 
   const recentSales = [
@@ -36,6 +56,42 @@ export default function Dashboard() {
           </Button>
         </div>
       </div>
+
+      {/* Market Prices Section */}
+      <Card className="border-2 border-yellow-300 shadow-lg">
+        <CardHeader className="pb-3">
+          <CardTitle className="flex items-center gap-2 text-xl">
+            💎 {t('dashboard.marketPrices')}
+            <Badge variant="secondary" className="ml-auto animate-pulse">LIVE</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            {marketPrices.map((price, index) => (
+              <div key={index} className={`${price.bgColor} p-4 rounded-lg border-2 border-yellow-200`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">{price.icon}</span>
+                    <div>
+                      <h4 className="font-semibold text-lg">{price.metal}</h4>
+                      <p className="text-sm text-gray-600">{t('dashboard.per10Grams')}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="text-2xl font-bold">{price.price}</p>
+                    <p className={`text-sm font-medium ${price.changeColor}`}>
+                      {price.change}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-gray-500 mt-3 text-center">
+            {t('dashboard.lastUpdated')}: {new Date().toLocaleTimeString()}
+          </p>
+        </CardContent>
+      </Card>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
