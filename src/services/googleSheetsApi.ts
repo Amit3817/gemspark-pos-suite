@@ -1,5 +1,5 @@
 
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyEzsxLZDOIqnJSLnrQpQQF2Ms-Vw9WqULtCPmqYJ4yjTHYcqM3xCLP72YFT3UqBNj3/exec';
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyEzsxLZDOIqnJSLnrQpQQQF2Ms-Vw9WqULtCPmqYJ4yjTHYcqM3xCLP72YFT3UqBNj3/exec';
 
 export interface Product {
   "Product ID": string;
@@ -26,6 +26,27 @@ export interface Bill {
   "Making Charges": number;
   "GST (%)": number;
   "Total Amount": number;
+}
+
+export interface Customer {
+  "Customer ID": string;
+  "Name": string;
+  "Phone": string;
+  "Email": string;
+  "Address": string;
+  "Total Purchases": number;
+  "Last Visit": string;
+  "Status": string;
+}
+
+export interface InventoryItem {
+  "Item ID": string;
+  "Item Name": string;
+  "Category": string;
+  "Current Stock": number;
+  "Min Stock": number;
+  "Max Stock": number;
+  "Last Updated": string;
 }
 
 class GoogleSheetsApi {
@@ -147,6 +168,90 @@ class GoogleSheetsApi {
     } catch (error) {
       console.error('Error deleting bill:', error);
       throw new Error('Failed to delete bill');
+    }
+  }
+
+  async getAllCustomers(): Promise<Customer[]> {
+    try {
+      console.log('Fetching customers from:', GOOGLE_SCRIPT_URL);
+      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllCustomers`);
+      const data = await response.json();
+      console.log('Fetched customers:', data);
+      return data;
+    } catch (error) {
+      console.error('Error fetching customers:', error);
+      throw new Error('Failed to fetch customers');
+    }
+  }
+
+  async addCustomer(customer: Customer): Promise<{ status: string; message: string }> {
+    try {
+      console.log('Adding customer:', customer);
+      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=addCustomer`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(customer),
+      });
+      const data = await response.json();
+      console.log('Added customer response:', data);
+      return data;
+    } catch (error) {
+      console.error('Error adding customer:', error);
+      throw new Error('Failed to add customer');
+    }
+  }
+
+  async getAllInventory(): Promise<InventoryItem[]> {
+    try {
+      console.log('Fetching inventory from:', GOOGLE_SCRIPT_URL);
+      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllInventory`);
+      const data = await response.json();
+      console.log('Fetched inventory:', data);
+      return data;
+    } catch (error) {
+      console.error('Error fetching inventory:', error);
+      throw new Error('Failed to fetch inventory');
+    }
+  }
+
+  async updateInventory(item: InventoryItem): Promise<{ status: string; message: string }> {
+    try {
+      console.log('Updating inventory:', item);
+      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=updateInventory`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(item),
+      });
+      const data = await response.json();
+      console.log('Updated inventory response:', data);
+      return data;
+    } catch (error) {
+      console.error('Error updating inventory:', error);
+      throw new Error('Failed to update inventory');
+    }
+  }
+
+  async getDashboardStats(): Promise<{
+    totalSales: number;
+    totalProducts: number;
+    totalCustomers: number;
+    lowStockItems: number;
+    recentSales: Bill[];
+    topProducts: Product[];
+  }> {
+    try {
+      console.log('Fetching dashboard stats from:', GOOGLE_SCRIPT_URL);
+      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getDashboardStats`);
+      const data = await response.json();
+      console.log('Fetched dashboard stats:', data);
+      return data;
+    } catch (error) {
+      console.error('Error fetching dashboard stats:', error);
+      throw new Error('Failed to fetch dashboard stats');
     }
   }
 }

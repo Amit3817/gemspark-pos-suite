@@ -1,6 +1,5 @@
-
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { Product, Bill, googleSheetsApi } from '@/services/googleSheetsApi';
+import { Product, Bill, Customer, InventoryItem, googleSheetsApi } from '@/services/googleSheetsApi';
 import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 
@@ -13,6 +12,12 @@ interface AppContextType {
   // Bill actions
   addBill: (bill: Omit<Bill, 'Date' | 'Total Amount'>) => Promise<void>;
   deleteBill: (billNo: string) => Promise<void>;
+  
+  // Customer actions
+  addCustomer: (customer: Customer) => Promise<void>;
+  
+  // Inventory actions
+  updateInventory: (item: InventoryItem) => Promise<void>;
   
   // UI state
   isLoading: boolean;
@@ -64,6 +69,9 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     try {
       await queryClient.invalidateQueries({ queryKey: ['products'] });
       await queryClient.invalidateQueries({ queryKey: ['bills'] });
+      await queryClient.invalidateQueries({ queryKey: ['customers'] });
+      await queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      await queryClient.invalidateQueries({ queryKey: ['dashboardStats'] });
       toast({
         title: "Success",
         description: "Data refreshed successfully",
@@ -202,6 +210,54 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     }
   };
 
+  const addCustomer = async (customer: Customer) => {
+    setIsLoading(true);
+    try {
+      const response = await googleSheetsApi.addCustomer(customer);
+      if (response.status === 'success') {
+        await queryClient.invalidateQueries({ queryKey: ['customers'] });
+        toast({
+          title: "Success",
+          description: "Customer added successfully",
+        });
+      } else {
+        throw new Error(response.message);
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to add customer",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const updateInventory = async (item: InventoryItem) => {
+    setIsLoading(true);
+    try {
+      const response = await googleSheetsApi.updateInventory(item);
+      if (response.status === 'success') {
+        await queryClient.invalidateQueries({ queryKey: ['inventory'] });
+        toast({
+          title: "Success",
+          description: "Inventory updated successfully",
+        });
+      } else {
+        throw new Error(response.message);
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to update inventory",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const exportData = () => {
     toast({
       title: "Export Started",
@@ -244,6 +300,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     deleteProduct,
     addBill,
     deleteBill,
+    addCustomer,
+    updateInventory,
     isLoading,
     selectedProducts,
     setSelectedProducts,
