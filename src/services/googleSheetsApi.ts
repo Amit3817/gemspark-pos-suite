@@ -1,4 +1,3 @@
-
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyEzsxLZDOIqnJSLnrQpQQF2Ms-Vw9WqULtCPmqYJ4yjTHYcqM3xCLP72YFT3UqBNj3/exec';
 
 export interface Product {
@@ -29,7 +28,7 @@ export interface Bill {
 }
 
 class GoogleSheetsApi {
-  private baseUrl = GOOGLE_SCRIPT_URL;
+  private baseUrl = 'https://script.google.com/macros/s/AKfycbyEzsxLZDOIqnJSLnrQpQQF2Ms-Vw9WqULtCPmqYJ4yjTHYcqM3xCLP72YFT3UqBNj3/exec';
 
   async getAllProducts(): Promise<Product[]> {
     try {
