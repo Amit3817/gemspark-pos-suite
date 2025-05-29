@@ -1,3 +1,4 @@
+
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyEzsxLZDOIqnJSLnrQpQQF2Ms-Vw9WqULtCPmqYJ4yjTHYcqM3xCLP72YFT3UqBNj3/exec';
 
 export interface Product {
@@ -28,12 +29,10 @@ export interface Bill {
 }
 
 class GoogleSheetsApi {
-  private baseUrl = 'https://script.google.com/macros/s/AKfycbyEzsxLZDOIqnJSLnrQpQQF2Ms-Vw9WqULtCPmqYJ4yjTHYcqM3xCLP72YFT3UqBNj3/exec';
-
   async getAllProducts(): Promise<Product[]> {
     try {
-      console.log('Fetching products from:', this.baseUrl);
-      const response = await fetch(`${this.baseUrl}?method=getAllProducts`);
+      console.log('Fetching products from:', GOOGLE_SCRIPT_URL);
+      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllProducts`);
       const data = await response.json();
       console.log('Fetched products:', data);
       return data;
@@ -46,7 +45,7 @@ class GoogleSheetsApi {
   async addProduct(product: Product): Promise<{ status: string; message: string }> {
     try {
       console.log('Adding product:', product);
-      const response = await fetch(`${this.baseUrl}?method=addProduct`, {
+      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=addProduct`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -65,7 +64,7 @@ class GoogleSheetsApi {
   async updateProduct(product: Product): Promise<{ status: string; message: string }> {
     try {
       console.log('Updating product:', product);
-      const response = await fetch(`${this.baseUrl}?method=updateProduct`, {
+      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=updateProduct`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -84,7 +83,7 @@ class GoogleSheetsApi {
   async deleteProduct(productId: string): Promise<{ status: string; message: string }> {
     try {
       console.log('Deleting product:', productId);
-      const response = await fetch(`${this.baseUrl}?method=deleteProduct`, {
+      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=deleteProduct`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -102,8 +101,8 @@ class GoogleSheetsApi {
 
   async getAllBills(): Promise<Bill[]> {
     try {
-      console.log('Fetching bills from:', this.baseUrl);
-      const response = await fetch(`${this.baseUrl}?method=getAllBills`);
+      console.log('Fetching bills from:', GOOGLE_SCRIPT_URL);
+      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllBills`);
       const data = await response.json();
       console.log('Fetched bills:', data);
       return data;
@@ -116,7 +115,7 @@ class GoogleSheetsApi {
   async addBill(bill: Omit<Bill, 'Date' | 'Total Amount'>): Promise<{ status: string; message: string }> {
     try {
       console.log('Adding bill:', bill);
-      const response = await fetch(`${this.baseUrl}?method=addBill`, {
+      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=addBill`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -135,7 +134,7 @@ class GoogleSheetsApi {
   async deleteBill(billNo: string): Promise<{ status: string; message: string }> {
     try {
       console.log('Deleting bill:', billNo);
-      const response = await fetch(`${this.baseUrl}?method=deleteBill`, {
+      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=deleteBill`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
