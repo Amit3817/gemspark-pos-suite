@@ -1,11 +1,14 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAppContext } from "@/contexts/AppContext";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Inventory() {
   const { t } = useLanguage();
+  const { importData, exportData, refreshData } = useAppContext();
+  const { toast } = useToast();
 
   const inventoryItems = [
     { id: "INV-001", name: t('sampleData.items.goldRings'), category: t('sampleData.categories.rings'), currentStock: 45, minStock: 20, maxStock: 100, status: "adequate" },
@@ -14,6 +17,30 @@ export default function Inventory() {
     { id: "INV-004", name: t('sampleData.items.pearlSets'), category: t('sampleData.categories.sets'), currentStock: 3, minStock: 10, maxStock: 30, status: "critical" },
     { id: "INV-005", name: t('sampleData.items.platinumBands'), category: t('sampleData.categories.rings'), currentStock: 67, minStock: 20, maxStock: 80, status: "adequate" },
   ];
+
+  const handleAddNew = () => {
+    toast({
+      title: "Add New Item",
+      description: "Opening form to add new inventory item",
+    });
+    console.log('Opening add new inventory item form');
+  };
+
+  const handleEdit = (itemId: string) => {
+    toast({
+      title: "Edit Item",
+      description: `Editing inventory item ${itemId}`,
+    });
+    console.log('Editing item:', itemId);
+  };
+
+  const handleUpdateStock = (itemId: string) => {
+    toast({
+      title: "Stock Updated",
+      description: `Stock levels updated for ${itemId}`,
+    });
+    console.log('Updating stock for:', itemId);
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -37,8 +64,13 @@ export default function Inventory() {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <h2 className="text-2xl md:text-3xl font-bold text-primary">{t('inventory.title')}</h2>
         <div className="flex gap-2">
-          <Button variant="outline" className="flex-1 sm:flex-none">{t('settings.importData')}</Button>
-          <Button className="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-primary flex-1 sm:flex-none">
+          <Button variant="outline" className="flex-1 sm:flex-none" onClick={importData}>
+            {t('settings.importData')}
+          </Button>
+          <Button 
+            onClick={handleAddNew}
+            className="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-primary flex-1 sm:flex-none"
+          >
             {t('inventory.addNew')}
           </Button>
         </div>
@@ -97,7 +129,22 @@ export default function Inventory() {
                     <p className="text-sm">{item.minStock} - {item.maxStock}</p>
                     <p className="text-xs text-muted-foreground">{t('inventory.minMax')}</p>
                   </div>
-                  <Button size="sm" variant="outline">{t('common.edit')}</Button>
+                  <div className="flex gap-2">
+                    <Button 
+                      size="sm" 
+                      variant="outline"
+                      onClick={() => handleEdit(item.id)}
+                    >
+                      {t('common.edit')}
+                    </Button>
+                    <Button 
+                      size="sm" 
+                      variant="default"
+                      onClick={() => handleUpdateStock(item.id)}
+                    >
+                      Update Stock
+                    </Button>
+                  </div>
                 </div>
               </div>
             ))}

@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,12 +7,21 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useQuery } from "@tanstack/react-query";
 import { googleSheetsApi, Product } from "@/services/googleSheetsApi";
 import { useToast } from "@/hooks/use-toast";
+import { useAppContext } from "@/contexts/AppContext";
 
 export default function ProductCatalog() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const { t } = useLanguage();
   const { toast } = useToast();
+  const { 
+    refreshData,
+    setShowAddProductModal,
+    setShowEditProductModal,
+    setEditingProduct,
+    selectedProducts,
+    setSelectedProducts
+  } = useAppContext();
 
   const { data: products = [], isLoading, error, refetch } = useQuery({
     queryKey: ['products'],
@@ -47,6 +55,32 @@ export default function ProductCatalog() {
     const matchesCategory = selectedCategory === "All" || product["Category"] === selectedCategory;
     return matchesSearch && matchesCategory;
   });
+
+  const handleAddNew = () => {
+    setShowAddProductModal(true);
+  };
+
+  const handleEditProduct = (product: Product) => {
+    setEditingProduct(product);
+    setShowEditProductModal(true);
+  };
+
+  const handleAddToSale = (product: Product) => {
+    const isAlreadySelected = selectedProducts.some(p => p["Product ID"] === product["Product ID"]);
+    if (!isAlreadySelected) {
+      setSelectedProducts([...selectedProducts, product]);
+      toast({
+        title: "Added to Sale",
+        description: `${product["Product Name"]} added to current sale`,
+      });
+    } else {
+      toast({
+        title: "Already Added",
+        description: "This product is already in the current sale",
+        variant: "destructive",
+      });
+    }
+  };
 
   const getStockBadge = (stock: number) => {
     if (stock <= 5) return <Badge variant="destructive">{t('products.stockStatus.low')}</Badge>;
@@ -102,10 +136,13 @@ export default function ProductCatalog() {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <h2 className="text-2xl md:text-3xl font-bold text-primary">{t('products.title')}</h2>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={() => refetch()}>
+          <Button variant="outline" onClick={refreshData}>
             Refresh Data
           </Button>
-          <Button className="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-primary w-full sm:w-auto">
+          <Button 
+            onClick={handleAddNew}
+            className="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-primary w-full sm:w-auto"
+          >
             {t('products.addNew')}
           </Button>
         </div>
@@ -201,10 +238,19 @@ export default function ProductCatalog() {
                             </p>
                           </div>
                           <div className="flex flex-col gap-2">
-                            <Button size="sm" variant="outline" className="w-full text-xs">
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="w-full text-xs"
+                              onClick={() => handleEditProduct(product)}
+                            >
                               {t('products.actions.edit')}
                             </Button>
-                            <Button size="sm" className="w-full text-xs bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 break-words">
+                            <Button 
+                              size="sm" 
+                              className="w-full text-xs bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700"
+                              onClick={() => handleAddToSale(product)}
+                            >
                               {t('products.actions.addToSale')}
                             </Button>
                           </div>

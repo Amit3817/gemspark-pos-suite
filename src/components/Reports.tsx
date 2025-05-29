@@ -2,9 +2,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useAppContext } from "@/contexts/AppContext";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Reports() {
   const { t } = useLanguage();
+  const { exportData } = useAppContext();
+  const { toast } = useToast();
 
   const reportTypes = [
     {
@@ -59,11 +63,54 @@ export default function Reports() {
     { name: t('sampleData.reports.customerAnalysis'), date: "2023-12-20", type: t('sampleData.reportTypes.customer'), size: "3.1 MB" }
   ];
 
+  const handleViewReport = (reportTitle: string) => {
+    toast({
+      title: "Viewing Report",
+      description: `Opening ${reportTitle}`,
+    });
+    console.log('Viewing report:', reportTitle);
+  };
+
+  const handleGenerateReport = (reportTitle: string) => {
+    toast({
+      title: "Generating Report",
+      description: `Generating ${reportTitle}...`,
+    });
+    console.log('Generating report:', reportTitle);
+  };
+
+  const handleCustomReport = () => {
+    toast({
+      title: "Custom Report",
+      description: "Opening custom report builder",
+    });
+    console.log('Opening custom report builder');
+  };
+
+  const handleDownload = (reportName: string) => {
+    toast({
+      title: "Downloading",
+      description: `Downloading ${reportName}`,
+    });
+    console.log('Downloading report:', reportName);
+  };
+
+  const handleShare = (reportName: string) => {
+    toast({
+      title: "Sharing",
+      description: `Sharing ${reportName}`,
+    });
+    console.log('Sharing report:', reportName);
+  };
+
   return (
     <div className="space-y-4 md:space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <h2 className="text-2xl md:text-3xl font-bold text-primary">{t('reports.title')}</h2>
-        <Button className="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-primary w-full sm:w-auto">
+        <Button 
+          onClick={handleCustomReport}
+          className="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-primary w-full sm:w-auto"
+        >
           {t('reports.custom')} {t('reports.title')}
         </Button>
       </div>
@@ -101,8 +148,21 @@ export default function Reports() {
             <CardContent>
               <p className="text-sm text-muted-foreground mb-4">{report.description}</p>
               <div className="flex gap-2">
-                <Button size="sm" variant="outline" className="flex-1">{t('common.view')}</Button>
-                <Button size="sm" className="flex-1">{t('reports.generateReport')}</Button>
+                <Button 
+                  size="sm" 
+                  variant="outline" 
+                  className="flex-1"
+                  onClick={() => handleViewReport(report.title)}
+                >
+                  {t('common.view')}
+                </Button>
+                <Button 
+                  size="sm" 
+                  className="flex-1"
+                  onClick={() => handleGenerateReport(report.title)}
+                >
+                  {t('reports.generateReport')}
+                </Button>
               </div>
             </CardContent>
           </Card>
@@ -123,8 +183,20 @@ export default function Reports() {
                   <p className="text-sm text-muted-foreground">{report.type} • {report.date} • {report.size}</p>
                 </div>
                 <div className="flex gap-2">
-                  <Button size="sm" variant="outline">{t('common.download')}</Button>
-                  <Button size="sm" variant="outline">{t('common.share')}</Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => handleDownload(report.name)}
+                  >
+                    {t('common.download')}
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    onClick={() => handleShare(report.name)}
+                  >
+                    {t('common.share')}
+                  </Button>
                 </div>
               </div>
             ))}

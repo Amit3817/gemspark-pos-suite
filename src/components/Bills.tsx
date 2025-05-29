@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,11 +8,13 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useQuery } from "@tanstack/react-query";
 import { googleSheetsApi, Bill } from "@/services/googleSheetsApi";
 import { useToast } from "@/hooks/use-toast";
+import { useAppContext } from "@/contexts/AppContext";
 
 export default function Bills() {
   const [searchTerm, setSearchTerm] = useState("");
   const { t } = useLanguage();
   const { toast } = useToast();
+  const { refreshData, printBill, sendWhatsApp, deleteBill } = useAppContext();
 
   const { data: bills = [], isLoading, error, refetch } = useQuery({
     queryKey: ['bills'],
@@ -37,6 +38,28 @@ export default function Bills() {
     bill["Phone Number"].includes(searchTerm) ||
     bill["Date"].toString().includes(searchTerm)
   );
+
+  const handleViewDetails = (bill: Bill) => {
+    toast({
+      title: "Bill Details",
+      description: `Viewing details for bill ${bill["Bill No"]}`,
+    });
+    console.log('Viewing bill details:', bill);
+  };
+
+  const handlePrintBill = (billNo: string) => {
+    printBill(billNo);
+  };
+
+  const handleSendWhatsApp = (bill: Bill) => {
+    sendWhatsApp(bill["Bill No"], bill["Phone Number"]);
+  };
+
+  const handleDeleteBill = async (billNo: string) => {
+    if (window.confirm('Are you sure you want to delete this bill?')) {
+      await deleteBill(billNo);
+    }
+  };
 
   const getStatusBadge = (status: string = "Paid") => {
     return <Badge className="bg-green-100 text-green-800 border-green-200">{t('bills.status.paid')}</Badge>;
@@ -71,7 +94,7 @@ export default function Bills() {
     <div className="space-y-4 md:space-y-6">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <h2 className="text-2xl md:text-3xl font-bold text-primary">{t('bills.title')}</h2>
-        <Button variant="outline" onClick={() => refetch()}>
+        <Button variant="outline" onClick={refreshData}>
           Refresh Data
         </Button>
       </div>
@@ -132,7 +155,7 @@ export default function Bills() {
                   <TableHead className="hidden lg:table-cell">Product</TableHead>
                   <TableHead className="hidden lg:table-cell">Metal Type</TableHead>
                   <TableHead>{t('bills.status')}</TableHead>
-                  <TableHead className="text-right">{t('common.view')}</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -153,11 +176,37 @@ export default function Bills() {
                     <TableCell>{getStatusBadge()}</TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
-                        <Button size="sm" variant="outline" className="text-xs">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="text-xs"
+                          onClick={() => handleViewDetails(bill)}
+                        >
                           {t('bills.viewDetails')}
                         </Button>
-                        <Button size="sm" variant="outline" className="text-xs hidden sm:inline-flex">
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="text-xs hidden sm:inline-flex"
+                          onClick={() => handlePrintBill(bill["Bill No"])}
+                        >
                           {t('bills.printBill')}
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          className="text-xs bg-green-500 hover:bg-green-600 text-white hidden lg:inline-flex"
+                          onClick={() => handleSendWhatsApp(bill)}
+                        >
+                          WhatsApp
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="destructive" 
+                          className="text-xs hidden xl:inline-flex"
+                          onClick={() => handleDeleteBill(bill["Bill No"])}
+                        >
+                          Delete
                         </Button>
                       </div>
                     </TableCell>
