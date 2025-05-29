@@ -33,6 +33,7 @@ class GoogleSheetsApi {
 
   async getAllProducts(): Promise<Product[]> {
     try {
+      console.log('Fetching products from:', this.baseUrl);
       const response = await fetch(`${this.baseUrl}?method=getAllProducts`);
       const data = await response.json();
       console.log('Fetched products:', data);
@@ -45,6 +46,7 @@ class GoogleSheetsApi {
 
   async addProduct(product: Product): Promise<{ status: string; message: string }> {
     try {
+      console.log('Adding product:', product);
       const response = await fetch(`${this.baseUrl}?method=addProduct`, {
         method: 'POST',
         headers: {
@@ -53,7 +55,7 @@ class GoogleSheetsApi {
         body: JSON.stringify(product),
       });
       const data = await response.json();
-      console.log('Added product:', data);
+      console.log('Added product response:', data);
       return data;
     } catch (error) {
       console.error('Error adding product:', error);
@@ -63,6 +65,7 @@ class GoogleSheetsApi {
 
   async updateProduct(product: Product): Promise<{ status: string; message: string }> {
     try {
+      console.log('Updating product:', product);
       const response = await fetch(`${this.baseUrl}?method=updateProduct`, {
         method: 'POST',
         headers: {
@@ -71,7 +74,7 @@ class GoogleSheetsApi {
         body: JSON.stringify(product),
       });
       const data = await response.json();
-      console.log('Updated product:', data);
+      console.log('Updated product response:', data);
       return data;
     } catch (error) {
       console.error('Error updating product:', error);
@@ -81,6 +84,7 @@ class GoogleSheetsApi {
 
   async deleteProduct(productId: string): Promise<{ status: string; message: string }> {
     try {
+      console.log('Deleting product:', productId);
       const response = await fetch(`${this.baseUrl}?method=deleteProduct`, {
         method: 'POST',
         headers: {
@@ -89,7 +93,7 @@ class GoogleSheetsApi {
         body: JSON.stringify({ productId }),
       });
       const data = await response.json();
-      console.log('Deleted product:', data);
+      console.log('Deleted product response:', data);
       return data;
     } catch (error) {
       console.error('Error deleting product:', error);
@@ -99,6 +103,7 @@ class GoogleSheetsApi {
 
   async getAllBills(): Promise<Bill[]> {
     try {
+      console.log('Fetching bills from:', this.baseUrl);
       const response = await fetch(`${this.baseUrl}?method=getAllBills`);
       const data = await response.json();
       console.log('Fetched bills:', data);
@@ -111,6 +116,7 @@ class GoogleSheetsApi {
 
   async addBill(bill: Omit<Bill, 'Date' | 'Total Amount'>): Promise<{ status: string; message: string }> {
     try {
+      console.log('Adding bill:', bill);
       const response = await fetch(`${this.baseUrl}?method=addBill`, {
         method: 'POST',
         headers: {
@@ -119,7 +125,7 @@ class GoogleSheetsApi {
         body: JSON.stringify(bill),
       });
       const data = await response.json();
-      console.log('Added bill:', data);
+      console.log('Added bill response:', data);
       return data;
     } catch (error) {
       console.error('Error adding bill:', error);
@@ -129,6 +135,7 @@ class GoogleSheetsApi {
 
   async deleteBill(billNo: string): Promise<{ status: string; message: string }> {
     try {
+      console.log('Deleting bill:', billNo);
       const response = await fetch(`${this.baseUrl}?method=deleteBill`, {
         method: 'POST',
         headers: {
@@ -137,7 +144,7 @@ class GoogleSheetsApi {
         body: JSON.stringify({ billNo }),
       });
       const data = await response.json();
-      console.log('Deleted bill:', data);
+      console.log('Deleted bill response:', data);
       return data;
     } catch (error) {
       console.error('Error deleting bill:', error);
