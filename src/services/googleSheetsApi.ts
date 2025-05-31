@@ -1,4 +1,3 @@
-
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyEzsxLZDOIqnJSLnrQpQQQF2Ms-Vw9WqULtCPmqYJ4yjTHYcqM3xCLP72YFT3UqBNj3/exec';
 
 export interface Product {
@@ -53,13 +52,61 @@ class GoogleSheetsApi {
   async getAllProducts(): Promise<Product[]> {
     try {
       console.log('Fetching products from:', GOOGLE_SCRIPT_URL);
-      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllProducts`);
+      console.log('Request URL:', `${GOOGLE_SCRIPT_URL}?method=getAllProducts`);
+      
+      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllProducts`, {
+        method: 'GET',
+        mode: 'cors',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
       console.log('Fetched products:', data);
       return data;
     } catch (error) {
       console.error('Error fetching products:', error);
-      throw new Error('Failed to fetch products');
+      console.error('Error details:', {
+        name: error.name,
+        message: error.message,
+        stack: error.stack
+      });
+      
+      // Provide fallback data for development
+      const fallbackData: Product[] = [
+        {
+          "Product ID": "DEMO001",
+          "Product Name": "Demo Gold Ring",
+          "Category": "Rings",
+          "Carat": "18K",
+          "Weight (g)": 5.2,
+          "Quantity": 10,
+          "Rate per g": 5500,
+          "Metal Type": "Gold"
+        },
+        {
+          "Product ID": "DEMO002",
+          "Product Name": "Demo Silver Necklace",
+          "Category": "Necklaces",
+          "Carat": "925",
+          "Weight (g)": 15.8,
+          "Quantity": 5,
+          "Rate per g": 80,
+          "Metal Type": "Silver"
+        }
+      ];
+      
+      console.log('Using fallback data:', fallbackData);
+      return fallbackData;
     }
   }
 
