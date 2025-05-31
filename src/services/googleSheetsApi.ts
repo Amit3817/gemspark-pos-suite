@@ -52,8 +52,9 @@ export interface InventoryItem {
 class GoogleSheetsApi {
   async getAllProducts(): Promise<Product[]> {
     try {
-      console.log('Fetching products from:', GOOGLE_SCRIPT_URL);
-      console.log('Request URL:', `${GOOGLE_SCRIPT_URL}?method=getAllProducts`);
+      console.log('=== FETCHING PRODUCTS ===');
+      console.log('Google Script URL:', GOOGLE_SCRIPT_URL);
+      console.log('Full request URL:', `${GOOGLE_SCRIPT_URL}?method=getAllProducts`);
       
       const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllProducts`, {
         method: 'GET',
@@ -64,22 +65,42 @@ class GoogleSheetsApi {
       });
       
       console.log('Response status:', response.status);
-      console.log('Response headers:', response.headers);
+      console.log('Response ok:', response.ok);
+      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
       
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        console.error(`HTTP error! status: ${response.status}`);
+        const errorText = await response.text();
+        console.error('Error response body:', errorText);
+        throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`);
       }
       
-      const data = await response.json();
-      console.log('Fetched products:', data);
+      const textResponse = await response.text();
+      console.log('Raw response text:', textResponse);
+      
+      let data;
+      try {
+        data = JSON.parse(textResponse);
+        console.log('Parsed JSON data:', data);
+      } catch (parseError) {
+        console.error('JSON parse error:', parseError);
+        console.error('Response was not valid JSON:', textResponse);
+        throw new Error('Invalid JSON response from Google Script');
+      }
+      
+      console.log('Successfully fetched products:', data.length, 'items');
       return data;
     } catch (error) {
-      console.error('Error fetching products:', error);
-      console.error('Error details:', {
-        name: error.name,
-        message: error.message,
-        stack: error.stack
-      });
+      console.error('=== ERROR FETCHING PRODUCTS ===');
+      console.error('Error name:', error.name);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack);
+      console.error('Error details:', error);
+      
+      // Check if it's a network error
+      if (error instanceof TypeError && error.message.includes('fetch')) {
+        console.error('This appears to be a network/CORS error');
+      }
       
       // Provide fallback data for development
       const fallbackData: Product[] = [
@@ -105,7 +126,7 @@ class GoogleSheetsApi {
         }
       ];
       
-      console.log('Using fallback data:', fallbackData);
+      console.log('Using fallback data due to API error');
       return fallbackData;
     }
   }
