@@ -1,3 +1,4 @@
+
 const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyEzsxLZDOIqnJSLnrQpQQQF2Ms-Vw9WqULtCPmqYJ4yjTHYcqM3xCLP72YFT3UqBNj3/exec';
 
 export interface Product {
@@ -56,7 +57,6 @@ class GoogleSheetsApi {
       
       const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllProducts`, {
         method: 'GET',
-        mode: 'cors',
         headers: {
           'Accept': 'application/json',
           'Content-Type': 'application/json',
@@ -170,13 +170,25 @@ class GoogleSheetsApi {
   async getAllBills(): Promise<Bill[]> {
     try {
       console.log('Fetching bills from:', GOOGLE_SCRIPT_URL);
-      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllBills`);
+      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllBills`, {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const data = await response.json();
       console.log('Fetched bills:', data);
       return data;
     } catch (error) {
       console.error('Error fetching bills:', error);
-      throw new Error('Failed to fetch bills');
+      // Return empty array as fallback for bills
+      return [];
     }
   }
 
@@ -218,68 +230,25 @@ class GoogleSheetsApi {
     }
   }
 
+  // Placeholder methods for other functionality - these will return mock data until implemented in Google Script
   async getAllCustomers(): Promise<Customer[]> {
-    try {
-      console.log('Fetching customers from:', GOOGLE_SCRIPT_URL);
-      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllCustomers`);
-      const data = await response.json();
-      console.log('Fetched customers:', data);
-      return data;
-    } catch (error) {
-      console.error('Error fetching customers:', error);
-      throw new Error('Failed to fetch customers');
-    }
+    console.log('getAllCustomers not implemented in Google Script yet');
+    return [];
   }
 
   async addCustomer(customer: Customer): Promise<{ status: string; message: string }> {
-    try {
-      console.log('Adding customer:', customer);
-      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=addCustomer`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(customer),
-      });
-      const data = await response.json();
-      console.log('Added customer response:', data);
-      return data;
-    } catch (error) {
-      console.error('Error adding customer:', error);
-      throw new Error('Failed to add customer');
-    }
+    console.log('addCustomer not implemented in Google Script yet');
+    return { status: 'error', message: 'Not implemented in Google Script yet' };
   }
 
   async getAllInventory(): Promise<InventoryItem[]> {
-    try {
-      console.log('Fetching inventory from:', GOOGLE_SCRIPT_URL);
-      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllInventory`);
-      const data = await response.json();
-      console.log('Fetched inventory:', data);
-      return data;
-    } catch (error) {
-      console.error('Error fetching inventory:', error);
-      throw new Error('Failed to fetch inventory');
-    }
+    console.log('getAllInventory not implemented in Google Script yet');
+    return [];
   }
 
   async updateInventory(item: InventoryItem): Promise<{ status: string; message: string }> {
-    try {
-      console.log('Updating inventory:', item);
-      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=updateInventory`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(item),
-      });
-      const data = await response.json();
-      console.log('Updated inventory response:', data);
-      return data;
-    } catch (error) {
-      console.error('Error updating inventory:', error);
-      throw new Error('Failed to update inventory');
-    }
+    console.log('updateInventory not implemented in Google Script yet');
+    return { status: 'error', message: 'Not implemented in Google Script yet' };
   }
 
   async getDashboardStats(): Promise<{
@@ -290,16 +259,15 @@ class GoogleSheetsApi {
     recentSales: Bill[];
     topProducts: Product[];
   }> {
-    try {
-      console.log('Fetching dashboard stats from:', GOOGLE_SCRIPT_URL);
-      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getDashboardStats`);
-      const data = await response.json();
-      console.log('Fetched dashboard stats:', data);
-      return data;
-    } catch (error) {
-      console.error('Error fetching dashboard stats:', error);
-      throw new Error('Failed to fetch dashboard stats');
-    }
+    console.log('getDashboardStats not implemented in Google Script yet');
+    return {
+      totalSales: 0,
+      totalProducts: 0,
+      totalCustomers: 0,
+      lowStockItems: 0,
+      recentSales: [],
+      topProducts: [],
+    };
   }
 }
 
