@@ -1,5 +1,4 @@
-
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyEzsxLZDOIqnJSLnrQpQQQF2Ms-Vw9WqULtCPmqYJ4yjTHYcqM3xCLP72YFT3UqBNj3/exec';
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyEzsxLZDOIqnJSLnrQpQQF2Ms-Vw9WqULtCPmqYJ4yjTHYcqM3xCLP72YFT3UqBNj3/exec';
 
 export interface Product {
   "Product ID": string;
@@ -55,13 +54,10 @@ class GoogleSheetsApi {
       console.log('=== FETCHING PRODUCTS ===');
       console.log('Google Script URL:', GOOGLE_SCRIPT_URL);
       console.log('Full request URL:', `${GOOGLE_SCRIPT_URL}?method=getAllProducts`);
+      console.log('Current origin:', window.location.origin);
       
       const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllProducts`, {
         method: 'GET',
-        headers: {
-          'Accept': 'application/json',
-          'Content-Type': 'application/json',
-        },
       });
       
       console.log('Response status:', response.status);
@@ -100,6 +96,10 @@ class GoogleSheetsApi {
       // Check if it's a network error
       if (error instanceof TypeError && error.message.includes('fetch')) {
         console.error('This appears to be a network/CORS error');
+        console.error('Possible solutions:');
+        console.error('1. Check if Google Apps Script is deployed as web app with "Anyone" access');
+        console.error('2. Verify the script URL is correct');
+        console.error('3. Check if the script has CORS headers properly configured');
       }
       
       // Provide fallback data for development
