@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -24,7 +23,6 @@ export function AppSidebar() {
   const menuItems = [
     { title: t('sidebar.dashboard'), url: "/", icon: "📊" },
     { title: t('sidebar.products'), url: "/products", icon: "💎" },
-    { title: t('sidebar.inventory'), url: "/inventory", icon: "📦" },
     { title: t('sidebar.billing'), url: "/billing", icon: "🧾" },
     { title: t('sidebar.customers'), url: "/customers", icon: "👥" },
     { title: t('sidebar.reports'), url: "/reports", icon: "📈" },

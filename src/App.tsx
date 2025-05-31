@@ -11,7 +11,6 @@ import Dashboard from "./components/Dashboard";
 import ProductCatalog from "./components/ProductCatalog";
 import BillingSystem from "./components/BillingSystem";
 import Bills from "./components/Bills";
-import Inventory from "./components/Inventory";
 import Customers from "./components/Customers";
 import Reports from "./components/Reports";
 import Settings from "./components/Settings";
@@ -33,7 +32,6 @@ const App = () => (
                 <Route path="/products" element={<ProductCatalog />} />
                 <Route path="/billing" element={<BillingSystem />} />
                 <Route path="/bills" element={<Bills />} />
-                <Route path="/inventory" element={<Inventory />} />
                 <Route path="/customers" element={<Customers />} />
                 <Route path="/reports" element={<Reports />} />
                 <Route path="/settings" element={<Settings />} />
