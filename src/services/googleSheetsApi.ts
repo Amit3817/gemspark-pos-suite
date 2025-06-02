@@ -52,23 +52,11 @@ export interface InventoryItem {
 class GoogleSheetsApi {
   async getAllProducts(): Promise<Product[]> {
     try {
-      console.log('=== FETCHING PRODUCTS ===');
-      console.log('Google Script URL:', GOOGLE_SCRIPT_URL);
-      
-      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllProducts`, {
-        method: 'GET',
-      });
-      
-      console.log('Response status:', response.status);
-      
-      if (!response.ok) {
-        console.error(`HTTP error! status: ${response.status}`);
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
+      console.log('Fetching products...');
+      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllProducts`);
       const data = await response.json();
-      console.log('Successfully fetched products:', data.length, 'items');
-      return data;
+      console.log('Products fetched:', data);
+      return data || [];
     } catch (error) {
       console.error('Error fetching products:', error);
       return [];
@@ -77,16 +65,11 @@ class GoogleSheetsApi {
 
   async addProduct(product: Product): Promise<{ status: string; message: string }> {
     try {
-      console.log('Adding product:', product);
-      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=addProduct`, {
+      const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(product),
+        body: JSON.stringify({ method: 'addProduct', data: product }),
       });
       const data = await response.json();
-      console.log('Added product response:', data);
       return data;
     } catch (error) {
       console.error('Error adding product:', error);
@@ -96,16 +79,11 @@ class GoogleSheetsApi {
 
   async updateProduct(product: Product): Promise<{ status: string; message: string }> {
     try {
-      console.log('Updating product:', product);
-      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=updateProduct`, {
+      const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(product),
+        body: JSON.stringify({ method: 'updateProduct', data: product }),
       });
       const data = await response.json();
-      console.log('Updated product response:', data);
       return data;
     } catch (error) {
       console.error('Error updating product:', error);
@@ -115,16 +93,11 @@ class GoogleSheetsApi {
 
   async deleteProduct(productId: string): Promise<{ status: string; message: string }> {
     try {
-      console.log('Deleting product:', productId);
-      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=deleteProduct`, {
+      const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ productId }),
+        body: JSON.stringify({ method: 'deleteProduct', data: { productId } }),
       });
       const data = await response.json();
-      console.log('Deleted product response:', data);
       return data;
     } catch (error) {
       console.error('Error deleting product:', error);
@@ -134,18 +107,11 @@ class GoogleSheetsApi {
 
   async getAllBills(): Promise<Bill[]> {
     try {
-      console.log('Fetching bills from:', GOOGLE_SCRIPT_URL);
-      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllBills`, {
-        method: 'GET',
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
+      console.log('Fetching bills...');
+      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllBills`);
       const data = await response.json();
-      console.log('Fetched bills:', data);
-      return data;
+      console.log('Bills fetched:', data);
+      return data || [];
     } catch (error) {
       console.error('Error fetching bills:', error);
       return [];
@@ -154,16 +120,11 @@ class GoogleSheetsApi {
 
   async addBill(bill: Omit<Bill, 'Date' | 'Total Amount'>): Promise<{ status: string; message: string }> {
     try {
-      console.log('Adding bill:', bill);
-      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=addBill`, {
+      const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(bill),
+        body: JSON.stringify({ method: 'addBill', data: bill }),
       });
       const data = await response.json();
-      console.log('Added bill response:', data);
       return data;
     } catch (error) {
       console.error('Error adding bill:', error);
@@ -173,16 +134,11 @@ class GoogleSheetsApi {
 
   async deleteBill(billNo: string): Promise<{ status: string; message: string }> {
     try {
-      console.log('Deleting bill:', billNo);
-      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=deleteBill`, {
+      const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ billNo }),
+        body: JSON.stringify({ method: 'deleteBill', data: { billNo } }),
       });
       const data = await response.json();
-      console.log('Deleted bill response:', data);
       return data;
     } catch (error) {
       console.error('Error deleting bill:', error);
@@ -192,18 +148,11 @@ class GoogleSheetsApi {
 
   async getAllCustomers(): Promise<Customer[]> {
     try {
-      console.log('Fetching customers from:', GOOGLE_SCRIPT_URL);
-      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllCustomers`, {
-        method: 'GET',
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
+      console.log('Fetching customers...');
+      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllCustomers`);
       const data = await response.json();
-      console.log('Fetched customers:', data);
-      return data;
+      console.log('Customers fetched:', data);
+      return data || [];
     } catch (error) {
       console.error('Error fetching customers:', error);
       return [];
@@ -212,16 +161,11 @@ class GoogleSheetsApi {
 
   async addCustomer(customer: Customer): Promise<{ status: string; message: string }> {
     try {
-      console.log('Adding customer:', customer);
-      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=addCustomer`, {
+      const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(customer),
+        body: JSON.stringify({ method: 'addCustomer', data: customer }),
       });
       const data = await response.json();
-      console.log('Added customer response:', data);
       return data;
     } catch (error) {
       console.error('Error adding customer:', error);
@@ -231,18 +175,11 @@ class GoogleSheetsApi {
 
   async getAllInventory(): Promise<InventoryItem[]> {
     try {
-      console.log('Fetching inventory from:', GOOGLE_SCRIPT_URL);
-      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllInventory`, {
-        method: 'GET',
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
+      console.log('Fetching inventory...');
+      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllInventory`);
       const data = await response.json();
-      console.log('Fetched inventory:', data);
-      return data;
+      console.log('Inventory fetched:', data);
+      return data || [];
     } catch (error) {
       console.error('Error fetching inventory:', error);
       return [];
@@ -251,16 +188,11 @@ class GoogleSheetsApi {
 
   async updateInventory(item: InventoryItem): Promise<{ status: string; message: string }> {
     try {
-      console.log('Updating inventory:', item);
-      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=updateInventory`, {
+      const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(item),
+        body: JSON.stringify({ method: 'updateInventory', data: item }),
       });
       const data = await response.json();
-      console.log('Updated inventory response:', data);
       return data;
     } catch (error) {
       console.error('Error updating inventory:', error);
@@ -277,18 +209,18 @@ class GoogleSheetsApi {
     topProducts: Product[];
   }> {
     try {
-      console.log('Fetching dashboard stats from:', GOOGLE_SCRIPT_URL);
-      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getDashboardStats`, {
-        method: 'GET',
-      });
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
+      console.log('Fetching dashboard stats...');
+      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getDashboardStats`);
       const data = await response.json();
-      console.log('Fetched dashboard stats:', data);
-      return data;
+      console.log('Dashboard stats fetched:', data);
+      return data || {
+        totalSales: 0,
+        totalProducts: 0,
+        totalCustomers: 0,
+        lowStockItems: 0,
+        recentSales: [],
+        topProducts: [],
+      };
     } catch (error) {
       console.error('Error fetching dashboard stats:', error);
       return {
