@@ -19,19 +19,24 @@ export default function Dashboard() {
     queryFn: googleSheetsApi.getAllProducts,
   });
 
-  const { data: bills = [] } = useQuery({
+  const { data: bills = [], isError: billsError } = useQuery({
     queryKey: ['bills'],
     queryFn: googleSheetsApi.getAllBills,
+    retry: 1,
   });
+
+  console.log('Bills data in Dashboard:', bills);
+  console.log('Bills error:', billsError);
 
   // Calculate real stats from fetched data
   const totalProducts = products.length;
   const lowStockItems = products.filter((product: Product) => product["Quantity"] <= 5);
   const lowStockCount = lowStockItems.length;
 
-  // Calculate today's sales (mock calculation since we don't have date filtering)
+  // Calculate today's sales from bills data
   const todaySales = bills.reduce((total: number, bill: Bill) => {
-    return total + (bill["Total Amount"] || 0);
+    const amount = typeof bill["Total Amount"] === 'number' ? bill["Total Amount"] : 0;
+    return total + amount;
   }, 0);
 
   const stats = [
@@ -60,22 +65,13 @@ export default function Dashboard() {
     }
   ];
 
-  // Get recent sales from real bills data
+  // Process recent sales from real bills data
   const recentSales = bills.slice(0, 3).map((bill: Bill) => ({
-    id: bill["Bill No"],
-    customer: bill["Customer Name"],
-    amount: `₹${bill["Total Amount"]?.toLocaleString() || '0'}`,
-    time: new Date().toLocaleTimeString() // Since we don't have time data
+    id: bill["Bill No"] || `BILL-${Math.random().toString(36).substr(2, 9)}`,
+    customer: bill["Customer Name"] || 'Unknown Customer',
+    amount: `₹${(bill["Total Amount"] || 0).toLocaleString()}`,
+    time: new Date().toLocaleTimeString() // Since we don't have time data in the sheet
   }));
-
-  // Fallback recent sales if no bills exist
-  const fallbackRecentSales = [
-    { id: "INV-001", customer: t('sampleData.customers.priyaSharma'), amount: "₹12,500", time: "10:30 AM" },
-    { id: "INV-002", customer: t('sampleData.customers.rajeshKumar'), amount: "₹8,750", time: "11:15 AM" },
-    { id: "INV-003", customer: t('sampleData.customers.anitaDesai'), amount: "₹25,000", time: "12:45 PM" },
-  ];
-
-  const displayRecentSales = recentSales.length > 0 ? recentSales : fallbackRecentSales;
 
   return (
     <div className="space-y-6">
@@ -158,18 +154,27 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {displayRecentSales.map((sale) => (
-                <div key={sale.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                  <div>
-                    <p className="font-medium">{sale.customer}</p>
-                    <p className="text-sm text-muted-foreground">{sale.id}</p>
+              {recentSales.length > 0 ? (
+                recentSales.map((sale) => (
+                  <div key={sale.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <div>
+                      <p className="font-medium">{sale.customer}</p>
+                      <p className="text-sm text-muted-foreground">{sale.id}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-green-600">{sale.amount}</p>
+                      <p className="text-sm text-muted-foreground">{sale.time}</p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-bold text-green-600">{sale.amount}</p>
-                    <p className="text-sm text-muted-foreground">{sale.time}</p>
-                  </div>
+                ))
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-muted-foreground">No recent sales data available</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {billsError ? 'Unable to fetch bills from Google Sheets' : 'No bills found'}
+                  </p>
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>
