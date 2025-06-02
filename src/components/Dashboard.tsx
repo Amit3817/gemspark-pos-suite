@@ -3,14 +3,41 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
+import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { googleSheetsApi, Product, Bill } from "@/services/googleSheetsApi";
+import { useAppContext } from "@/contexts/AppContext";
 
 export default function Dashboard() {
   const { t } = useLanguage();
+  const navigate = useNavigate();
+  const { setShowAddProductModal, exportData } = useAppContext();
+
+  // Fetch real data from Google Sheets
+  const { data: products = [] } = useQuery({
+    queryKey: ['products'],
+    queryFn: googleSheetsApi.getAllProducts,
+  });
+
+  const { data: bills = [] } = useQuery({
+    queryKey: ['bills'],
+    queryFn: googleSheetsApi.getAllBills,
+  });
+
+  // Calculate real stats from fetched data
+  const totalProducts = products.length;
+  const lowStockItems = products.filter((product: Product) => product["Quantity"] <= 5);
+  const lowStockCount = lowStockItems.length;
+
+  // Calculate today's sales (mock calculation since we don't have date filtering)
+  const todaySales = bills.reduce((total: number, bill: Bill) => {
+    return total + (bill["Total Amount"] || 0);
+  }, 0);
 
   const stats = [
-    { title: t('dashboard.todaySales'), value: "₹45,230", change: "+12.5%", color: "text-green-600" },
-    { title: t('dashboard.totalProducts'), value: "1,247", change: "+3.2%", color: "text-blue-600" },
-    { title: t('dashboard.lowStock'), value: "23", change: "+5 items", color: "text-yellow-600" },
+    { title: t('dashboard.todaySales'), value: `₹${todaySales.toLocaleString()}`, change: "+12.5%", color: "text-green-600" },
+    { title: t('dashboard.totalProducts'), value: totalProducts.toString(), change: "+3.2%", color: "text-blue-600" },
+    { title: t('dashboard.lowStock'), value: lowStockCount.toString(), change: `+${lowStockCount} items`, color: "text-yellow-600" },
     { title: t('dashboard.totalCustomers'), value: "892", change: "+8.1%", color: "text-purple-600" },
   ];
 
@@ -33,25 +60,33 @@ export default function Dashboard() {
     }
   ];
 
-  const recentSales = [
+  // Get recent sales from real bills data
+  const recentSales = bills.slice(0, 3).map((bill: Bill) => ({
+    id: bill["Bill No"],
+    customer: bill["Customer Name"],
+    amount: `₹${bill["Total Amount"]?.toLocaleString() || '0'}`,
+    time: new Date().toLocaleTimeString() // Since we don't have time data
+  }));
+
+  // Fallback recent sales if no bills exist
+  const fallbackRecentSales = [
     { id: "INV-001", customer: t('sampleData.customers.priyaSharma'), amount: "₹12,500", time: "10:30 AM" },
     { id: "INV-002", customer: t('sampleData.customers.rajeshKumar'), amount: "₹8,750", time: "11:15 AM" },
     { id: "INV-003", customer: t('sampleData.customers.anitaDesai'), amount: "₹25,000", time: "12:45 PM" },
   ];
 
-  const lowStockItems = [
-    { name: t('sampleData.items.goldRing18K'), stock: 3, category: t('sampleData.categories.rings') },
-    { name: t('sampleData.items.emeraldEarrings'), stock: 1, category: t('sampleData.categories.earrings') },
-    { name: t('sampleData.items.silverBracelet'), stock: 5, category: t('sampleData.categories.bracelets') },
-  ];
+  const displayRecentSales = recentSales.length > 0 ? recentSales : fallbackRecentSales;
 
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
         <h2 className="text-3xl font-bold text-primary">{t('dashboard.title')}</h2>
         <div className="flex space-x-3">
-          <Button variant="outline">{t('common.export')} {t('reports.title')}</Button>
-          <Button className="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-primary">
+          <Button variant="outline" onClick={exportData}>{t('common.export')} {t('reports.title')}</Button>
+          <Button 
+            className="bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-primary"
+            onClick={() => navigate('/billing')}
+          >
             {t('customers.newSale')}
           </Button>
         </div>
@@ -118,12 +153,12 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               {t('dashboard.recentSales')}
-              <Button variant="ghost" size="sm">{t('common.view')} {t('common.all')}</Button>
+              <Button variant="ghost" size="sm" onClick={() => navigate('/bills')}>{t('common.view')} {t('common.all')}</Button>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentSales.map((sale) => (
+              {displayRecentSales.map((sale) => (
                 <div key={sale.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                   <div>
                     <p className="font-medium">{sale.customer}</p>
@@ -144,25 +179,31 @@ export default function Dashboard() {
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               {t('dashboard.lowStock')} {t('common.alert')}
-              <Button variant="ghost" size="sm">{t('common.manage')}</Button>
+              <Button variant="ghost" size="sm" onClick={() => navigate('/products')}>{t('common.manage')}</Button>
             </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {lowStockItems.map((item, index) => (
-                <div key={index} className="flex items-center justify-between p-3 border border-yellow-200 bg-yellow-50 rounded-lg">
-                  <div>
-                    <p className="font-medium">{item.name}</p>
-                    <p className="text-sm text-muted-foreground">{item.category}</p>
+              {lowStockItems.length > 0 ? (
+                lowStockItems.slice(0, 3).map((item: Product, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 border border-yellow-200 bg-yellow-50 rounded-lg">
+                    <div>
+                      <p className="font-medium">{item["Product Name"]}</p>
+                      <p className="text-sm text-muted-foreground">{item["Category"]}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-yellow-600">{item["Quantity"]} {t('common.left')}</p>
+                      <Button size="sm" variant="outline" className="mt-1" onClick={() => navigate('/products')}>
+                        {t('inventory.restock')}
+                      </Button>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <p className="font-bold text-yellow-600">{item.stock} {t('common.left')}</p>
-                    <Button size="sm" variant="outline" className="mt-1">
-                      {t('inventory.restock')}
-                    </Button>
-                  </div>
+                ))
+              ) : (
+                <div className="text-center py-4">
+                  <p className="text-muted-foreground">No low stock items</p>
                 </div>
-              ))}
+              )}
             </div>
           </CardContent>
         </Card>
@@ -175,19 +216,35 @@ export default function Dashboard() {
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button variant="outline" className="h-20 flex flex-col space-y-2">
+            <Button 
+              variant="outline" 
+              className="h-20 flex flex-col space-y-2"
+              onClick={() => setShowAddProductModal(true)}
+            >
               <span className="text-2xl">💍</span>
               <span>{t('products.addNew')}</span>
             </Button>
-            <Button variant="outline" className="h-20 flex flex-col space-y-2">
+            <Button 
+              variant="outline" 
+              className="h-20 flex flex-col space-y-2"
+              onClick={() => navigate('/customers')}
+            >
               <span className="text-2xl">👤</span>
               <span>{t('customers.addNew')}</span>
             </Button>
-            <Button variant="outline" className="h-20 flex flex-col space-y-2">
+            <Button 
+              variant="outline" 
+              className="h-20 flex flex-col space-y-2"
+              onClick={() => navigate('/billing')}
+            >
               <span className="text-2xl">🧾</span>
               <span>{t('common.generateBill')}</span>
             </Button>
-            <Button variant="outline" className="h-20 flex flex-col space-y-2">
+            <Button 
+              variant="outline" 
+              className="h-20 flex flex-col space-y-2"
+              onClick={() => navigate('/reports')}
+            >
               <span className="text-2xl">📊</span>
               <span>{t('common.viewReports')}</span>
             </Button>
