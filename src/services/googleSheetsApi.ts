@@ -54,17 +54,17 @@ class GoogleSheetsApi {
     try {
       console.log('Fetching products...');
       const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllProducts`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const result = await response.json();
       console.log('Products response:', result);
       
-      // Handle nested response format from Google Apps Script
+      // Handle your Google Apps Script response format
       if (result.status === 'success' && Array.isArray(result.data)) {
         return result.data;
-      }
-      
-      // Fallback for direct array response
-      if (Array.isArray(result)) {
-        return result;
       }
       
       console.warn('Unexpected response format:', result);
@@ -77,14 +77,8 @@ class GoogleSheetsApi {
 
   async addProduct(product: Product): Promise<{ status: string; message: string }> {
     try {
-      const formData = new FormData();
-      formData.append('method', 'addProduct');
-      formData.append('data', JSON.stringify(product));
-      
-      const response = await fetch(GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        body: formData,
-      });
+      const url = `${GOOGLE_SCRIPT_URL}?method=addProduct&data=${encodeURIComponent(JSON.stringify(product))}`;
+      const response = await fetch(url, { method: 'POST' });
       const data = await response.json();
       return data;
     } catch (error) {
@@ -95,14 +89,8 @@ class GoogleSheetsApi {
 
   async updateProduct(product: Product): Promise<{ status: string; message: string }> {
     try {
-      const formData = new FormData();
-      formData.append('method', 'updateProduct');
-      formData.append('data', JSON.stringify(product));
-      
-      const response = await fetch(GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        body: formData,
-      });
+      const url = `${GOOGLE_SCRIPT_URL}?method=updateProduct&data=${encodeURIComponent(JSON.stringify(product))}`;
+      const response = await fetch(url, { method: 'POST' });
       const data = await response.json();
       return data;
     } catch (error) {
@@ -113,14 +101,8 @@ class GoogleSheetsApi {
 
   async deleteProduct(productId: string): Promise<{ status: string; message: string }> {
     try {
-      const formData = new FormData();
-      formData.append('method', 'deleteProduct');
-      formData.append('data', JSON.stringify({ productId }));
-      
-      const response = await fetch(GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        body: formData,
-      });
+      const url = `${GOOGLE_SCRIPT_URL}?method=deleteProduct&data=${encodeURIComponent(JSON.stringify({ productId }))}`;
+      const response = await fetch(url, { method: 'POST' });
       const data = await response.json();
       return data;
     } catch (error) {
@@ -133,17 +115,16 @@ class GoogleSheetsApi {
     try {
       console.log('Fetching bills...');
       const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllBills`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const result = await response.json();
       console.log('Bills response:', result);
       
-      // Handle nested response format from Google Apps Script
       if (result.status === 'success' && Array.isArray(result.data)) {
         return result.data;
-      }
-      
-      // Fallback for direct array response
-      if (Array.isArray(result)) {
-        return result;
       }
       
       console.warn('Unexpected response format:', result);
@@ -156,14 +137,8 @@ class GoogleSheetsApi {
 
   async addBill(bill: Omit<Bill, 'Date' | 'Total Amount'>): Promise<{ status: string; message: string }> {
     try {
-      const formData = new FormData();
-      formData.append('method', 'addBill');
-      formData.append('data', JSON.stringify(bill));
-      
-      const response = await fetch(GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        body: formData,
-      });
+      const url = `${GOOGLE_SCRIPT_URL}?method=addBill&data=${encodeURIComponent(JSON.stringify(bill))}`;
+      const response = await fetch(url, { method: 'POST' });
       const data = await response.json();
       return data;
     } catch (error) {
@@ -174,14 +149,8 @@ class GoogleSheetsApi {
 
   async deleteBill(billNo: string): Promise<{ status: string; message: string }> {
     try {
-      const formData = new FormData();
-      formData.append('method', 'deleteBill');
-      formData.append('data', JSON.stringify({ billNo }));
-      
-      const response = await fetch(GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        body: formData,
-      });
+      const url = `${GOOGLE_SCRIPT_URL}?method=deleteBill&data=${encodeURIComponent(JSON.stringify({ billNo }))}`;
+      const response = await fetch(url, { method: 'POST' });
       const data = await response.json();
       return data;
     } catch (error) {
@@ -194,17 +163,16 @@ class GoogleSheetsApi {
     try {
       console.log('Fetching customers...');
       const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllCustomers`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const result = await response.json();
       console.log('Customers response:', result);
       
-      // Handle nested response format from Google Apps Script
       if (result.status === 'success' && Array.isArray(result.data)) {
         return result.data;
-      }
-      
-      // Fallback for direct array response
-      if (Array.isArray(result)) {
-        return result;
       }
       
       console.warn('Unexpected response format:', result);
@@ -217,14 +185,8 @@ class GoogleSheetsApi {
 
   async addCustomer(customer: Customer): Promise<{ status: string; message: string }> {
     try {
-      const formData = new FormData();
-      formData.append('method', 'addCustomer');
-      formData.append('data', JSON.stringify(customer));
-      
-      const response = await fetch(GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        body: formData,
-      });
+      const url = `${GOOGLE_SCRIPT_URL}?method=addCustomer&data=${encodeURIComponent(JSON.stringify(customer))}`;
+      const response = await fetch(url, { method: 'POST' });
       const data = await response.json();
       return data;
     } catch (error) {
@@ -237,17 +199,16 @@ class GoogleSheetsApi {
     try {
       console.log('Fetching inventory...');
       const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllInventory`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const result = await response.json();
       console.log('Inventory response:', result);
       
-      // Handle nested response format from Google Apps Script
       if (result.status === 'success' && Array.isArray(result.data)) {
         return result.data;
-      }
-      
-      // Fallback for direct array response
-      if (Array.isArray(result)) {
-        return result;
       }
       
       console.warn('Unexpected response format:', result);
@@ -260,14 +221,8 @@ class GoogleSheetsApi {
 
   async updateInventory(item: InventoryItem): Promise<{ status: string; message: string }> {
     try {
-      const formData = new FormData();
-      formData.append('method', 'updateInventory');
-      formData.append('data', JSON.stringify(item));
-      
-      const response = await fetch(GOOGLE_SCRIPT_URL, {
-        method: 'POST',
-        body: formData,
-      });
+      const url = `${GOOGLE_SCRIPT_URL}?method=updateInventory&data=${encodeURIComponent(JSON.stringify(item))}`;
+      const response = await fetch(url, { method: 'POST' });
       const data = await response.json();
       return data;
     } catch (error) {
@@ -287,17 +242,16 @@ class GoogleSheetsApi {
     try {
       console.log('Fetching dashboard stats...');
       const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getDashboardStats`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      
       const result = await response.json();
       console.log('Dashboard stats response:', result);
       
-      // Handle nested response format from Google Apps Script
       if (result.status === 'success' && result.data) {
         return result.data;
-      }
-      
-      // Fallback for direct object response
-      if (result.totalSales !== undefined) {
-        return result;
       }
       
       console.warn('Unexpected response format:', result);
@@ -319,6 +273,17 @@ class GoogleSheetsApi {
         recentSales: [],
         topProducts: [],
       };
+    }
+  }
+
+  async insertMockData(): Promise<{ status: string; message: string }> {
+    try {
+      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=insertMockData`);
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Error inserting mock data:', error);
+      throw new Error('Failed to insert mock data');
     }
   }
 }
