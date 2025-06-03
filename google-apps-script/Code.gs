@@ -36,9 +36,17 @@ function doGet(e) {
 
 function doPost(e) {
   const method = e.parameter.method;
-  const data = JSON.parse(e.postData.contents);
+  let data;
   
   try {
+    // Handle FormData
+    if (e.parameter.data) {
+      data = JSON.parse(e.parameter.data);
+    } else {
+      // Fallback for JSON body
+      data = JSON.parse(e.postData.contents);
+    }
+    
     switch (method) {
       case 'addProduct':
         return addProduct(data);

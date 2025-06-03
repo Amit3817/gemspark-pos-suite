@@ -65,9 +65,13 @@ class GoogleSheetsApi {
 
   async addProduct(product: Product): Promise<{ status: string; message: string }> {
     try {
+      const formData = new FormData();
+      formData.append('method', 'addProduct');
+      formData.append('data', JSON.stringify(product));
+      
       const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
-        body: JSON.stringify({ method: 'addProduct', data: product }),
+        body: formData,
       });
       const data = await response.json();
       return data;
@@ -79,9 +83,13 @@ class GoogleSheetsApi {
 
   async updateProduct(product: Product): Promise<{ status: string; message: string }> {
     try {
+      const formData = new FormData();
+      formData.append('method', 'updateProduct');
+      formData.append('data', JSON.stringify(product));
+      
       const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
-        body: JSON.stringify({ method: 'updateProduct', data: product }),
+        body: formData,
       });
       const data = await response.json();
       return data;
@@ -93,9 +101,13 @@ class GoogleSheetsApi {
 
   async deleteProduct(productId: string): Promise<{ status: string; message: string }> {
     try {
+      const formData = new FormData();
+      formData.append('method', 'deleteProduct');
+      formData.append('data', JSON.stringify({ productId }));
+      
       const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
-        body: JSON.stringify({ method: 'deleteProduct', data: { productId } }),
+        body: formData,
       });
       const data = await response.json();
       return data;
@@ -120,9 +132,13 @@ class GoogleSheetsApi {
 
   async addBill(bill: Omit<Bill, 'Date' | 'Total Amount'>): Promise<{ status: string; message: string }> {
     try {
+      const formData = new FormData();
+      formData.append('method', 'addBill');
+      formData.append('data', JSON.stringify(bill));
+      
       const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
-        body: JSON.stringify({ method: 'addBill', data: bill }),
+        body: formData,
       });
       const data = await response.json();
       return data;
@@ -134,9 +150,13 @@ class GoogleSheetsApi {
 
   async deleteBill(billNo: string): Promise<{ status: string; message: string }> {
     try {
+      const formData = new FormData();
+      formData.append('method', 'deleteBill');
+      formData.append('data', JSON.stringify({ billNo }));
+      
       const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
-        body: JSON.stringify({ method: 'deleteBill', data: { billNo } }),
+        body: formData,
       });
       const data = await response.json();
       return data;
@@ -161,9 +181,13 @@ class GoogleSheetsApi {
 
   async addCustomer(customer: Customer): Promise<{ status: string; message: string }> {
     try {
+      const formData = new FormData();
+      formData.append('method', 'addCustomer');
+      formData.append('data', JSON.stringify(customer));
+      
       const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
-        body: JSON.stringify({ method: 'addCustomer', data: customer }),
+        body: formData,
       });
       const data = await response.json();
       return data;
@@ -188,9 +212,13 @@ class GoogleSheetsApi {
 
   async updateInventory(item: InventoryItem): Promise<{ status: string; message: string }> {
     try {
+      const formData = new FormData();
+      formData.append('method', 'updateInventory');
+      formData.append('data', JSON.stringify(item));
+      
       const response = await fetch(GOOGLE_SCRIPT_URL, {
         method: 'POST',
-        body: JSON.stringify({ method: 'updateInventory', data: item }),
+        body: formData,
       });
       const data = await response.json();
       return data;
