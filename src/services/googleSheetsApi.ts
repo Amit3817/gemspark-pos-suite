@@ -49,25 +49,56 @@ export interface InventoryItem {
   "Last Updated": string;
 }
 
+// Simple fetch wrapper with better error handling
+async function makeRequest(url: string, options: RequestInit = {}): Promise<any> {
+  try {
+    console.log('Making request to:', url);
+    
+    const response = await fetch(url, {
+      ...options,
+      mode: 'cors',
+      credentials: 'omit',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+        ...options.headers,
+      }
+    });
+
+    console.log('Response status:', response.status);
+    console.log('Response ok:', response.ok);
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const text = await response.text();
+    console.log('Raw response:', text);
+
+    // Try to parse as JSON
+    try {
+      const data = JSON.parse(text);
+      return data;
+    } catch (parseError) {
+      console.error('Failed to parse JSON:', parseError);
+      throw new Error(`Invalid JSON response: ${text}`);
+    }
+  } catch (error) {
+    console.error('Request failed:', error);
+    throw error;
+  }
+}
+
 class GoogleSheetsApi {
   async getAllProducts(): Promise<Product[]> {
     try {
-      console.log('Fetching products...');
-      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllProducts`);
+      const url = `${GOOGLE_SCRIPT_URL}?method=getAllProducts&_=${Date.now()}`;
+      const result = await makeRequest(url);
       
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      console.log('Products response:', result);
-      
-      // Handle your Google Apps Script response format
       if (result.status === 'success' && Array.isArray(result.data)) {
         return result.data;
       }
       
-      console.warn('Unexpected response format:', result);
+      console.warn('Unexpected products response:', result);
       return [];
     } catch (error) {
       console.error('Error fetching products:', error);
@@ -77,10 +108,16 @@ class GoogleSheetsApi {
 
   async addProduct(product: Product): Promise<{ status: string; message: string }> {
     try {
-      const url = `${GOOGLE_SCRIPT_URL}?method=addProduct&data=${encodeURIComponent(JSON.stringify(product))}`;
-      const response = await fetch(url, { method: 'POST' });
-      const data = await response.json();
-      return data;
+      const formData = new URLSearchParams();
+      formData.append('method', 'addProduct');
+      formData.append('data', JSON.stringify(product));
+
+      const result = await makeRequest(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        body: formData
+      });
+
+      return result;
     } catch (error) {
       console.error('Error adding product:', error);
       throw new Error('Failed to add product');
@@ -89,10 +126,16 @@ class GoogleSheetsApi {
 
   async updateProduct(product: Product): Promise<{ status: string; message: string }> {
     try {
-      const url = `${GOOGLE_SCRIPT_URL}?method=updateProduct&data=${encodeURIComponent(JSON.stringify(product))}`;
-      const response = await fetch(url, { method: 'POST' });
-      const data = await response.json();
-      return data;
+      const formData = new URLSearchParams();
+      formData.append('method', 'updateProduct');
+      formData.append('data', JSON.stringify(product));
+
+      const result = await makeRequest(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        body: formData
+      });
+
+      return result;
     } catch (error) {
       console.error('Error updating product:', error);
       throw new Error('Failed to update product');
@@ -101,10 +144,16 @@ class GoogleSheetsApi {
 
   async deleteProduct(productId: string): Promise<{ status: string; message: string }> {
     try {
-      const url = `${GOOGLE_SCRIPT_URL}?method=deleteProduct&data=${encodeURIComponent(JSON.stringify({ productId }))}`;
-      const response = await fetch(url, { method: 'POST' });
-      const data = await response.json();
-      return data;
+      const formData = new URLSearchParams();
+      formData.append('method', 'deleteProduct');
+      formData.append('data', JSON.stringify({ productId }));
+
+      const result = await makeRequest(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        body: formData
+      });
+
+      return result;
     } catch (error) {
       console.error('Error deleting product:', error);
       throw new Error('Failed to delete product');
@@ -113,21 +162,14 @@ class GoogleSheetsApi {
 
   async getAllBills(): Promise<Bill[]> {
     try {
-      console.log('Fetching bills...');
-      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllBills`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      console.log('Bills response:', result);
+      const url = `${GOOGLE_SCRIPT_URL}?method=getAllBills&_=${Date.now()}`;
+      const result = await makeRequest(url);
       
       if (result.status === 'success' && Array.isArray(result.data)) {
         return result.data;
       }
       
-      console.warn('Unexpected response format:', result);
+      console.warn('Unexpected bills response:', result);
       return [];
     } catch (error) {
       console.error('Error fetching bills:', error);
@@ -137,10 +179,16 @@ class GoogleSheetsApi {
 
   async addBill(bill: Omit<Bill, 'Date' | 'Total Amount'>): Promise<{ status: string; message: string }> {
     try {
-      const url = `${GOOGLE_SCRIPT_URL}?method=addBill&data=${encodeURIComponent(JSON.stringify(bill))}`;
-      const response = await fetch(url, { method: 'POST' });
-      const data = await response.json();
-      return data;
+      const formData = new URLSearchParams();
+      formData.append('method', 'addBill');
+      formData.append('data', JSON.stringify(bill));
+
+      const result = await makeRequest(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        body: formData
+      });
+
+      return result;
     } catch (error) {
       console.error('Error adding bill:', error);
       throw new Error('Failed to add bill');
@@ -149,10 +197,16 @@ class GoogleSheetsApi {
 
   async deleteBill(billNo: string): Promise<{ status: string; message: string }> {
     try {
-      const url = `${GOOGLE_SCRIPT_URL}?method=deleteBill&data=${encodeURIComponent(JSON.stringify({ billNo }))}`;
-      const response = await fetch(url, { method: 'POST' });
-      const data = await response.json();
-      return data;
+      const formData = new URLSearchParams();
+      formData.append('method', 'deleteBill');
+      formData.append('data', JSON.stringify({ billNo }));
+
+      const result = await makeRequest(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        body: formData
+      });
+
+      return result;
     } catch (error) {
       console.error('Error deleting bill:', error);
       throw new Error('Failed to delete bill');
@@ -161,21 +215,14 @@ class GoogleSheetsApi {
 
   async getAllCustomers(): Promise<Customer[]> {
     try {
-      console.log('Fetching customers...');
-      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllCustomers`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      console.log('Customers response:', result);
+      const url = `${GOOGLE_SCRIPT_URL}?method=getAllCustomers&_=${Date.now()}`;
+      const result = await makeRequest(url);
       
       if (result.status === 'success' && Array.isArray(result.data)) {
         return result.data;
       }
       
-      console.warn('Unexpected response format:', result);
+      console.warn('Unexpected customers response:', result);
       return [];
     } catch (error) {
       console.error('Error fetching customers:', error);
@@ -185,10 +232,16 @@ class GoogleSheetsApi {
 
   async addCustomer(customer: Customer): Promise<{ status: string; message: string }> {
     try {
-      const url = `${GOOGLE_SCRIPT_URL}?method=addCustomer&data=${encodeURIComponent(JSON.stringify(customer))}`;
-      const response = await fetch(url, { method: 'POST' });
-      const data = await response.json();
-      return data;
+      const formData = new URLSearchParams();
+      formData.append('method', 'addCustomer');
+      formData.append('data', JSON.stringify(customer));
+
+      const result = await makeRequest(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        body: formData
+      });
+
+      return result;
     } catch (error) {
       console.error('Error adding customer:', error);
       throw new Error('Failed to add customer');
@@ -197,21 +250,14 @@ class GoogleSheetsApi {
 
   async getAllInventory(): Promise<InventoryItem[]> {
     try {
-      console.log('Fetching inventory...');
-      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllInventory`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      console.log('Inventory response:', result);
+      const url = `${GOOGLE_SCRIPT_URL}?method=getAllInventory&_=${Date.now()}`;
+      const result = await makeRequest(url);
       
       if (result.status === 'success' && Array.isArray(result.data)) {
         return result.data;
       }
       
-      console.warn('Unexpected response format:', result);
+      console.warn('Unexpected inventory response:', result);
       return [];
     } catch (error) {
       console.error('Error fetching inventory:', error);
@@ -221,10 +267,16 @@ class GoogleSheetsApi {
 
   async updateInventory(item: InventoryItem): Promise<{ status: string; message: string }> {
     try {
-      const url = `${GOOGLE_SCRIPT_URL}?method=updateInventory&data=${encodeURIComponent(JSON.stringify(item))}`;
-      const response = await fetch(url, { method: 'POST' });
-      const data = await response.json();
-      return data;
+      const formData = new URLSearchParams();
+      formData.append('method', 'updateInventory');
+      formData.append('data', JSON.stringify(item));
+
+      const result = await makeRequest(GOOGLE_SCRIPT_URL, {
+        method: 'POST',
+        body: formData
+      });
+
+      return result;
     } catch (error) {
       console.error('Error updating inventory:', error);
       throw new Error('Failed to update inventory');
@@ -240,21 +292,14 @@ class GoogleSheetsApi {
     topProducts: Product[];
   }> {
     try {
-      console.log('Fetching dashboard stats...');
-      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getDashboardStats`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-      
-      const result = await response.json();
-      console.log('Dashboard stats response:', result);
+      const url = `${GOOGLE_SCRIPT_URL}?method=getDashboardStats&_=${Date.now()}`;
+      const result = await makeRequest(url);
       
       if (result.status === 'success' && result.data) {
         return result.data;
       }
       
-      console.warn('Unexpected response format:', result);
+      console.warn('Unexpected dashboard stats response:', result);
       return {
         totalSales: 0,
         totalProducts: 0,
@@ -278,9 +323,9 @@ class GoogleSheetsApi {
 
   async insertMockData(): Promise<{ status: string; message: string }> {
     try {
-      const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=insertMockData`);
-      const data = await response.json();
-      return data;
+      const url = `${GOOGLE_SCRIPT_URL}?method=insertMockData&_=${Date.now()}`;
+      const result = await makeRequest(url);
+      return result;
     } catch (error) {
       console.error('Error inserting mock data:', error);
       throw new Error('Failed to insert mock data');
