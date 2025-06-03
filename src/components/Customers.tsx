@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,6 +8,7 @@ import { useQuery } from "@tanstack/react-query";
 import { googleSheetsApi, Customer } from "@/services/googleSheetsApi";
 import { useToast } from "@/hooks/use-toast";
 import { useAppContext } from "@/contexts/AppContext";
+import { testGoogleScript, testWithJsonp } from "@/services/testGoogleScript";
 
 export default function Customers() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -31,6 +31,26 @@ export default function Customers() {
       });
     }
   }, [error, toast]);
+
+  const handleTestConnection = async () => {
+    toast({
+      title: "Testing Connection",
+      description: "Running connection tests...",
+    });
+    
+    console.log('=== Starting Google Apps Script Connection Tests ===');
+    
+    const test1 = await testGoogleScript();
+    console.log('Test 1 (Fetch):', test1);
+    
+    const test2 = await testWithJsonp();
+    console.log('Test 2 (JSONP):', test2);
+    
+    toast({
+      title: "Tests Complete",
+      description: "Check console for results",
+    });
+  };
 
   const filteredCustomers = customers.filter((customer: Customer) =>
     customer["Name"].toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -94,6 +114,9 @@ export default function Customers() {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <h2 className="text-2xl md:text-3xl font-bold text-primary">{t('customers.title')}</h2>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={handleTestConnection}>
+            Test Connection
+          </Button>
           <Button variant="outline" onClick={refreshData}>
             Refresh Data
           </Button>
@@ -144,6 +167,31 @@ export default function Customers() {
         />
         <Button variant="outline">{t('customers.exportList')}</Button>
       </div>
+
+      {/* Error Message for Connection Issues */}
+      {error && (
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="pt-6">
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-red-800 mb-2">Connection Error</h3>
+              <p className="text-red-600 mb-4">
+                Unable to connect to Google Sheets. This usually means:
+              </p>
+              <ul className="text-sm text-red-600 text-left mb-4 space-y-1">
+                <li>• Google Apps Script is not deployed as a web app</li>
+                <li>• Script permissions are not set to "Anyone"</li>
+                <li>• Script is not executing as "Me" (owner)</li>
+              </ul>
+              <Button onClick={handleTestConnection} variant="outline" className="mr-2">
+                Test Connection
+              </Button>
+              <Button onClick={() => refetch()}>
+                Retry
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Customers Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
@@ -202,7 +250,7 @@ export default function Customers() {
         ))}
       </div>
 
-      {filteredCustomers.length === 0 && !isLoading && (
+      {filteredCustomers.length === 0 && !isLoading && !error && (
         <div className="text-center py-12">
           <p className="text-muted-foreground">{t('customers.noCustomers')}</p>
         </div>
