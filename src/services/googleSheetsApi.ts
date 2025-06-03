@@ -54,9 +54,21 @@ class GoogleSheetsApi {
     try {
       console.log('Fetching products...');
       const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllProducts`);
-      const data = await response.json();
-      console.log('Products fetched:', data);
-      return data || [];
+      const result = await response.json();
+      console.log('Products response:', result);
+      
+      // Handle nested response format from Google Apps Script
+      if (result.status === 'success' && Array.isArray(result.data)) {
+        return result.data;
+      }
+      
+      // Fallback for direct array response
+      if (Array.isArray(result)) {
+        return result;
+      }
+      
+      console.warn('Unexpected response format:', result);
+      return [];
     } catch (error) {
       console.error('Error fetching products:', error);
       return [];
@@ -121,9 +133,21 @@ class GoogleSheetsApi {
     try {
       console.log('Fetching bills...');
       const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllBills`);
-      const data = await response.json();
-      console.log('Bills fetched:', data);
-      return data || [];
+      const result = await response.json();
+      console.log('Bills response:', result);
+      
+      // Handle nested response format from Google Apps Script
+      if (result.status === 'success' && Array.isArray(result.data)) {
+        return result.data;
+      }
+      
+      // Fallback for direct array response
+      if (Array.isArray(result)) {
+        return result;
+      }
+      
+      console.warn('Unexpected response format:', result);
+      return [];
     } catch (error) {
       console.error('Error fetching bills:', error);
       return [];
@@ -170,9 +194,21 @@ class GoogleSheetsApi {
     try {
       console.log('Fetching customers...');
       const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllCustomers`);
-      const data = await response.json();
-      console.log('Customers fetched:', data);
-      return data || [];
+      const result = await response.json();
+      console.log('Customers response:', result);
+      
+      // Handle nested response format from Google Apps Script
+      if (result.status === 'success' && Array.isArray(result.data)) {
+        return result.data;
+      }
+      
+      // Fallback for direct array response
+      if (Array.isArray(result)) {
+        return result;
+      }
+      
+      console.warn('Unexpected response format:', result);
+      return [];
     } catch (error) {
       console.error('Error fetching customers:', error);
       return [];
@@ -201,9 +237,21 @@ class GoogleSheetsApi {
     try {
       console.log('Fetching inventory...');
       const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getAllInventory`);
-      const data = await response.json();
-      console.log('Inventory fetched:', data);
-      return data || [];
+      const result = await response.json();
+      console.log('Inventory response:', result);
+      
+      // Handle nested response format from Google Apps Script
+      if (result.status === 'success' && Array.isArray(result.data)) {
+        return result.data;
+      }
+      
+      // Fallback for direct array response
+      if (Array.isArray(result)) {
+        return result;
+      }
+      
+      console.warn('Unexpected response format:', result);
+      return [];
     } catch (error) {
       console.error('Error fetching inventory:', error);
       return [];
@@ -239,9 +287,21 @@ class GoogleSheetsApi {
     try {
       console.log('Fetching dashboard stats...');
       const response = await fetch(`${GOOGLE_SCRIPT_URL}?method=getDashboardStats`);
-      const data = await response.json();
-      console.log('Dashboard stats fetched:', data);
-      return data || {
+      const result = await response.json();
+      console.log('Dashboard stats response:', result);
+      
+      // Handle nested response format from Google Apps Script
+      if (result.status === 'success' && result.data) {
+        return result.data;
+      }
+      
+      // Fallback for direct object response
+      if (result.totalSales !== undefined) {
+        return result;
+      }
+      
+      console.warn('Unexpected response format:', result);
+      return {
         totalSales: 0,
         totalProducts: 0,
         totalCustomers: 0,
