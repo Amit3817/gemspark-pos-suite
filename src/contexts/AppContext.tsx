@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, ReactNode } from 'react';
 import { Product, Bill, Customer, InventoryItem, supabaseApi } from '@/services/supabaseApi';
 import { useToast } from '@/hooks/use-toast';
@@ -44,6 +43,8 @@ interface AppContextType {
   setShowEditProductModal: (show: boolean) => void;
   editingProduct: Product | null;
   setEditingProduct: (product: Product | null) => void;
+  showAddCustomerModal: boolean;
+  setShowAddCustomerModal: (show: boolean) => void;
   
   // General actions
   refreshData: () => Promise<void>;
@@ -89,6 +90,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [showEditProductModal, setShowEditProductModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [showAddCustomerModal, setShowAddCustomerModal] = useState(false);
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -282,6 +284,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
           title: "Success",
           description: "Customer added successfully",
         });
+        setShowAddCustomerModal(false);
       } else {
         throw new Error(response.message);
       }
@@ -321,11 +324,81 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   };
 
   const exportData = () => {
+    // Create CSV data for products
+    const productsCSV = [
+      ['Product ID', 'Product Name', 'Category', 'Metal Type', 'Carat', 'Weight (g)', 'Quantity', 'Rate per g', 'Notes'],
+      ...products.map(p => [
+        p["Product ID"],
+        p["Product Name"],
+        p["Category"],
+        p["Metal Type"],
+        p["Carat"],
+        p["Weight (g)"],
+        p["Quantity"],
+        p["Rate per g"],
+        p["Notes"]
+      ])
+    ];
+
+    // Create CSV data for customers
+    const customersCSV = [
+      ['Customer ID', 'Name', 'Phone', 'Email', 'Status', 'Total Purchases', 'Last Visit'],
+      ...customers.map(c => [
+        c["Customer ID"],
+        c["Name"],
+        c["Phone"],
+        c["Email"],
+        c["Status"],
+        c["Total Purchases"],
+        c["Last Visit"]
+      ])
+    ];
+
+    // Create CSV data for bills
+    const billsCSV = [
+      ['Bill No', 'Date', 'Customer Name', 'Phone Number', 'Product ID', 'Product Name', 'Metal Type', 'Carat', 'Weight (g)', 'Rate per g', 'Making Charges', 'GST (%)', 'Total Amount'],
+      ...bills.map(b => [
+        b["Bill No"],
+        b["Date"],
+        b["Customer Name"],
+        b["Phone Number"],
+        b["Product ID"],
+        b["Product Name"],
+        b["Metal Type"],
+        b["Carat"],
+        b["Weight (g)"],
+        b["Rate per g"],
+        b["Making Charges"],
+        b["GST (%)"],
+        b["Total Amount"]
+      ])
+    ];
+
+    // Convert to CSV string and download
+    const convertToCSV = (data: any[][]) => {
+      return data.map(row => row.join(',')).join('\n');
+    };
+
+    const downloadCSV = (data: string, filename: string) => {
+      const blob = new Blob([data], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      window.URL.revokeObjectURL(url);
+    };
+
+    downloadCSV(convertToCSV(productsCSV), 'products.csv');
+    downloadCSV(convertToCSV(customersCSV), 'customers.csv');
+    downloadCSV(convertToCSV(billsCSV), 'bills.csv');
+
     toast({
-      title: "Export Started",
-      description: "Data export will begin shortly",
+      title: "Export Complete",
+      description: "Data exported successfully to CSV files",
     });
-    console.log('Exporting data...');
   };
 
   const importData = () => {
@@ -384,6 +457,8 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     setShowEditProductModal,
     editingProduct,
     setEditingProduct,
+    showAddCustomerModal,
+    setShowAddCustomerModal,
     refreshData,
     exportData,
     importData,

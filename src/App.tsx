@@ -1,48 +1,49 @@
 
-import { Toaster } from "@/components/ui/toaster";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { LanguageProvider } from "@/contexts/LanguageContext";
-import { AppProvider } from "@/contexts/AppContext";
-import Layout from "./components/Layout";
-import Dashboard from "./components/Dashboard";
-import ProductCatalog from "./components/ProductCatalog";
-import BillingSystem from "./components/BillingSystem";
-import Bills from "./components/Bills";
-import Customers from "./components/Customers";
-import Reports from "./components/Reports";
-import Settings from "./components/Settings";
-import NotFound from "./pages/NotFound";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { LanguageProvider } from '@/contexts/LanguageContext';
+import { AppProvider } from '@/contexts/AppContext';
+import { Toaster } from '@/components/ui/toaster';
+import Layout from '@/components/Layout';
+import Index from '@/pages/Index';
+import NotFound from '@/pages/NotFound';
+import AddProductModal from '@/components/AddProductModal';
+import EditProductModal from '@/components/EditProductModal';
+import AddCustomerModal from '@/components/AddCustomerModal';
+import './App.css';
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      retry: 1,
+    },
+  },
+});
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <LanguageProvider>
-      <AppProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <BrowserRouter>
-            <Layout>
+function App() {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <LanguageProvider>
+        <AppProvider>
+          <Router>
+            <div className="min-h-screen bg-background">
               <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/products" element={<ProductCatalog />} />
-                <Route path="/billing" element={<BillingSystem />} />
-                <Route path="/bills" element={<Bills />} />
-                <Route path="/customers" element={<Customers />} />
-                <Route path="/reports" element={<Reports />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="*" element={<NotFound />} />
+                <Route path="/" element={<Layout />}>
+                  <Route index element={<Index />} />
+                  <Route path="*" element={<NotFound />} />
+                </Route>
               </Routes>
-            </Layout>
-          </BrowserRouter>
-        </TooltipProvider>
-      </AppProvider>
-    </LanguageProvider>
-  </QueryClientProvider>
-);
+              <AddProductModal />
+              <EditProductModal />
+              <AddCustomerModal />
+              <Toaster />
+            </div>
+          </Router>
+        </AppProvider>
+      </LanguageProvider>
+    </QueryClientProvider>
+  );
+}
 
 export default App;

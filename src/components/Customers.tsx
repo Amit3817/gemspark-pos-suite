@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,7 +12,7 @@ export default function Customers() {
   const [searchTerm, setSearchTerm] = useState("");
   const { t } = useLanguage();
   const { toast } = useToast();
-  const { customers, isLoadingCustomers, refreshData } = useAppContext();
+  const { customers, isLoadingCustomers, refreshData, setShowAddCustomerModal } = useAppContext();
 
   console.log('Customers component - data:', customers);
 
@@ -37,11 +36,7 @@ export default function Customers() {
   };
 
   const handleAddNew = () => {
-    toast({
-      title: "Add New Customer",
-      description: "Opening form to add new customer",
-    });
-    console.log('Opening add new customer form');
+    setShowAddCustomerModal(true);
   };
 
   const handleViewHistory = (customerId: string) => {
