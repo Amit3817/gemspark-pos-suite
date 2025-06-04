@@ -1,9 +1,21 @@
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
 import { Product, Bill, Customer, InventoryItem, googleSheetsApi } from '@/services/googleSheetsApi';
 import { useToast } from '@/hooks/use-toast';
-import { useQueryClient } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
 interface AppContextType {
+  // Data
+  products: Product[];
+  bills: Bill[];
+  customers: Customer[];
+  inventory: InventoryItem[];
+  
+  // Loading states
+  isLoadingProducts: boolean;
+  isLoadingBills: boolean;
+  isLoadingCustomers: boolean;
+  isLoadingInventory: boolean;
+  
   // Product actions
   addProduct: (product: Product) => Promise<void>;
   updateProduct: (product: Product) => Promise<void>;
@@ -54,6 +66,22 @@ interface AppProviderProps {
   children: ReactNode;
 }
 
+// Helper function to clean data from Google Sheets
+const cleanBillData = (bills: any[]): Bill[] => {
+  return bills.map(bill => ({
+    ...bill,
+    "Customer Name": bill["Customer Name\t"] || bill["Customer Name"] || "Unknown Customer",
+    "Total Amount": typeof bill["Total Amount"] === 'number' ? bill["Total Amount"] : parseFloat(bill["Total Amount"]) || 0
+  }));
+};
+
+const cleanCustomerData = (customers: any[]): Customer[] => {
+  return customers.map(customer => ({
+    ...customer,
+    "Total Purchases": typeof customer["Total Purchases"] === 'number' ? customer["Total Purchases"] : parseFloat(customer["Total Purchases"]) || 0
+  }));
+};
+
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedProducts, setSelectedProducts] = useState<Product[]>([]);
@@ -63,6 +91,39 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Central data fetching with React Query
+  const { data: products = [], isLoading: isLoadingProducts } = useQuery({
+    queryKey: ['products'],
+    queryFn: googleSheetsApi.getAllProducts,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: billsData = [], isLoading: isLoadingBills } = useQuery({
+    queryKey: ['bills'],
+    queryFn: googleSheetsApi.getAllBills,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: customersData = [], isLoading: isLoadingCustomers } = useQuery({
+    queryKey: ['customers'],
+    queryFn: googleSheetsApi.getAllCustomers,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
+  });
+
+  const { data: inventory = [], isLoading: isLoadingInventory } = useQuery({
+    queryKey: ['inventory'],
+    queryFn: googleSheetsApi.getAllInventory,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    refetchOnWindowFocus: false,
+  });
+
+  // Clean the data before providing it
+  const bills = cleanBillData(billsData);
+  const customers = cleanCustomerData(customersData);
 
   const refreshData = async () => {
     setIsLoading(true);
@@ -263,7 +324,6 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       title: "Export Started",
       description: "Data export will begin shortly",
     });
-    // Implementation for data export
     console.log('Exporting data...');
   };
 
@@ -272,7 +332,6 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       title: "Import Started",
       description: "Please select a file to import",
     });
-    // Implementation for data import
     console.log('Importing data...');
   };
 
@@ -295,6 +354,19 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   };
 
   const value: AppContextType = {
+    // Data
+    products,
+    bills,
+    customers,
+    inventory,
+    
+    // Loading states
+    isLoadingProducts,
+    isLoadingBills,
+    isLoadingCustomers,
+    isLoadingInventory,
+    
+    // Actions
     addProduct,
     updateProduct,
     deleteProduct,

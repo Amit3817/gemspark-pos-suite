@@ -1,11 +1,10 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useQuery } from "@tanstack/react-query";
-import { googleSheetsApi, Product } from "@/services/googleSheetsApi";
+import { Product } from "@/services/googleSheetsApi";
 import { useToast } from "@/hooks/use-toast";
 import { useAppContext } from "@/contexts/AppContext";
 
@@ -15,6 +14,8 @@ export default function ProductCatalog() {
   const { t } = useLanguage();
   const { toast } = useToast();
   const { 
+    products,
+    isLoadingProducts,
     refreshData,
     setShowAddProductModal,
     setShowEditProductModal,
@@ -23,21 +24,7 @@ export default function ProductCatalog() {
     setSelectedProducts
   } = useAppContext();
 
-  const { data: products = [], isLoading, error, refetch } = useQuery({
-    queryKey: ['products'],
-    queryFn: googleSheetsApi.getAllProducts,
-  });
-
-  useEffect(() => {
-    if (error) {
-      console.error('Error loading products:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load products from Google Sheets",
-        variant: "destructive",
-      });
-    }
-  }, [error, toast]);
+  console.log('ProductCatalog component - data:', products);
 
   const categories = [
     { id: "All", name: t('products.categories.all') },
@@ -121,7 +108,7 @@ export default function ProductCatalog() {
         products: filteredProducts
       }];
 
-  if (isLoading) {
+  if (isLoadingProducts) {
     return (
       <div className="space-y-4 md:space-y-6">
         <div className="flex justify-center items-center py-12">
@@ -265,7 +252,7 @@ export default function ProductCatalog() {
         )
       ))}
 
-      {filteredProducts.length === 0 && !isLoading && (
+      {filteredProducts.length === 0 && !isLoadingProducts && (
         <div className="text-center py-12">
           <p className="text-muted-foreground">{t('products.noProducts')}</p>
         </div>

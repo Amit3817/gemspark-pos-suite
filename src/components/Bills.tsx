@@ -3,10 +3,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useQuery } from "@tanstack/react-query";
-import { googleSheetsApi, Bill } from "@/services/googleSheetsApi";
+import { Bill } from "@/services/googleSheetsApi";
 import { useToast } from "@/hooks/use-toast";
 import { useAppContext } from "@/contexts/AppContext";
 
@@ -14,28 +13,14 @@ export default function Bills() {
   const [searchTerm, setSearchTerm] = useState("");
   const { t } = useLanguage();
   const { toast } = useToast();
-  const { refreshData, printBill, sendWhatsApp, deleteBill } = useAppContext();
+  const { bills, isLoadingBills, refreshData, printBill, sendWhatsApp, deleteBill } = useAppContext();
 
-  const { data: bills = [], isLoading, error, refetch } = useQuery({
-    queryKey: ['bills'],
-    queryFn: googleSheetsApi.getAllBills,
-  });
-
-  useEffect(() => {
-    if (error) {
-      console.error('Error loading bills:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load bills from Google Sheets",
-        variant: "destructive",
-      });
-    }
-  }, [error, toast]);
+  console.log('Bills component - data:', bills);
 
   const filteredBills = bills.filter((bill: Bill) =>
     bill["Bill No"].toLowerCase().includes(searchTerm.toLowerCase()) ||
     bill["Customer Name"].toLowerCase().includes(searchTerm.toLowerCase()) ||
-    bill["Phone Number"].includes(searchTerm) ||
+    bill["Phone Number"].toString().includes(searchTerm) ||
     bill["Date"].toString().includes(searchTerm)
   );
 
@@ -52,7 +37,7 @@ export default function Bills() {
   };
 
   const handleSendWhatsApp = (bill: Bill) => {
-    sendWhatsApp(bill["Bill No"], bill["Phone Number"]);
+    sendWhatsApp(bill["Bill No"], bill["Phone Number"].toString());
   };
 
   const handleDeleteBill = async (billNo: string) => {
@@ -80,7 +65,7 @@ export default function Bills() {
   }, 0);
   const averageBill = totalBills > 0 ? Math.round(totalRevenue / totalBills) : 0;
 
-  if (isLoading) {
+  if (isLoadingBills) {
     return (
       <div className="space-y-4 md:space-y-6">
         <div className="flex justify-center items-center py-12">
@@ -218,7 +203,7 @@ export default function Bills() {
         </CardContent>
       </Card>
 
-      {filteredBills.length === 0 && !isLoading && (
+      {filteredBills.length === 0 && !isLoadingBills && (
         <div className="text-center py-12">
           <p className="text-muted-foreground">{t('bills.noBills')}</p>
         </div>

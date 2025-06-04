@@ -2,10 +2,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useQuery } from "@tanstack/react-query";
-import { googleSheetsApi, Customer } from "@/services/googleSheetsApi";
+import { Customer } from "@/services/googleSheetsApi";
 import { useToast } from "@/hooks/use-toast";
 import { useAppContext } from "@/contexts/AppContext";
 import { testGoogleScript, testWithJsonp } from "@/services/testGoogleScript";
@@ -14,23 +13,9 @@ export default function Customers() {
   const [searchTerm, setSearchTerm] = useState("");
   const { t } = useLanguage();
   const { toast } = useToast();
-  const { refreshData, addCustomer } = useAppContext();
+  const { customers, isLoadingCustomers, refreshData } = useAppContext();
 
-  const { data: customers = [], isLoading, error, refetch } = useQuery({
-    queryKey: ['customers'],
-    queryFn: googleSheetsApi.getAllCustomers,
-  });
-
-  useEffect(() => {
-    if (error) {
-      console.error('Error loading customers:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load customers from Google Sheets",
-        variant: "destructive",
-      });
-    }
-  }, [error, toast]);
+  console.log('Customers component - data:', customers);
 
   const handleTestConnection = async () => {
     toast({
@@ -99,7 +84,7 @@ export default function Customers() {
   const vipCustomers = customers.filter((c: Customer) => c["Status"] === "VIP").length;
   const newCustomers = customers.filter((c: Customer) => c["Status"] === "New").length;
 
-  if (isLoading) {
+  if (isLoadingCustomers) {
     return (
       <div className="space-y-4 md:space-y-6">
         <div className="flex justify-center items-center py-12">
@@ -168,31 +153,6 @@ export default function Customers() {
         <Button variant="outline">{t('customers.exportList')}</Button>
       </div>
 
-      {/* Error Message for Connection Issues */}
-      {error && (
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="pt-6">
-            <div className="text-center">
-              <h3 className="text-lg font-semibold text-red-800 mb-2">Connection Error</h3>
-              <p className="text-red-600 mb-4">
-                Unable to connect to Google Sheets. This usually means:
-              </p>
-              <ul className="text-sm text-red-600 text-left mb-4 space-y-1">
-                <li>• Google Apps Script is not deployed as a web app</li>
-                <li>• Script permissions are not set to "Anyone"</li>
-                <li>• Script is not executing as "Me" (owner)</li>
-              </ul>
-              <Button onClick={handleTestConnection} variant="outline" className="mr-2">
-                Test Connection
-              </Button>
-              <Button onClick={() => refetch()}>
-                Retry
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
       {/* Customers Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
         {filteredCustomers.map((customer: Customer) => (
@@ -250,7 +210,7 @@ export default function Customers() {
         ))}
       </div>
 
-      {filteredCustomers.length === 0 && !isLoading && !error && (
+      {filteredCustomers.length === 0 && !isLoadingCustomers && (
         <div className="text-center py-12">
           <p className="text-muted-foreground">{t('customers.noCustomers')}</p>
         </div>

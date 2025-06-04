@@ -1,49 +1,46 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
-import { googleSheetsApi, Product, Bill } from "@/services/googleSheetsApi";
 import { useAppContext } from "@/contexts/AppContext";
 
 export default function Dashboard() {
   const { t } = useLanguage();
   const navigate = useNavigate();
-  const { setShowAddProductModal, exportData } = useAppContext();
+  const { 
+    products, 
+    bills, 
+    customers,
+    isLoadingProducts,
+    isLoadingBills,
+    isLoadingCustomers,
+    setShowAddProductModal, 
+    exportData 
+  } = useAppContext();
 
-  // Fetch real data from Google Sheets
-  const { data: products = [] } = useQuery({
-    queryKey: ['products'],
-    queryFn: googleSheetsApi.getAllProducts,
-  });
+  console.log('Dashboard - Products:', products);
+  console.log('Dashboard - Bills:', bills);
+  console.log('Dashboard - Customers:', customers);
 
-  const { data: bills = [], isError: billsError } = useQuery({
-    queryKey: ['bills'],
-    queryFn: googleSheetsApi.getAllBills,
-    retry: 1,
-  });
-
-  console.log('Bills data in Dashboard:', bills);
-  console.log('Bills error:', billsError);
-
-  // Calculate real stats from fetched data
+  // Calculate real stats from centralized data
   const totalProducts = products.length;
-  const lowStockItems = products.filter((product: Product) => product["Quantity"] <= 5);
+  const lowStockItems = products.filter(product => product["Quantity"] <= 5);
   const lowStockCount = lowStockItems.length;
 
   // Calculate today's sales from bills data
-  const todaySales = bills.reduce((total: number, bill: Bill) => {
+  const todaySales = bills.reduce((total, bill) => {
     const amount = typeof bill["Total Amount"] === 'number' ? bill["Total Amount"] : 0;
     return total + amount;
   }, 0);
+
+  const totalCustomers = customers.length;
 
   const stats = [
     { title: t('dashboard.todaySales'), value: `₹${todaySales.toLocaleString()}`, change: "+12.5%", color: "text-green-600" },
     { title: t('dashboard.totalProducts'), value: totalProducts.toString(), change: "+3.2%", color: "text-blue-600" },
     { title: t('dashboard.lowStock'), value: lowStockCount.toString(), change: `+${lowStockCount} items`, color: "text-yellow-600" },
-    { title: t('dashboard.totalCustomers'), value: "892", change: "+8.1%", color: "text-purple-600" },
+    { title: t('dashboard.totalCustomers'), value: totalCustomers.toString(), change: "+8.1%", color: "text-purple-600" },
   ];
 
   const marketPrices = [
@@ -66,12 +63,22 @@ export default function Dashboard() {
   ];
 
   // Process recent sales from real bills data
-  const recentSales = bills.slice(0, 3).map((bill: Bill) => ({
+  const recentSales = bills.slice(0, 3).map(bill => ({
     id: bill["Bill No"] || `BILL-${Math.random().toString(36).substr(2, 9)}`,
     customer: bill["Customer Name"] || 'Unknown Customer',
     amount: `₹${(bill["Total Amount"] || 0).toLocaleString()}`,
-    time: new Date().toLocaleTimeString() // Since we don't have time data in the sheet
+    time: new Date().toLocaleTimeString()
   }));
+
+  if (isLoadingProducts || isLoadingBills || isLoadingCustomers) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-center items-center py-12">
+          <p className="text-muted-foreground">Loading dashboard data...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -170,9 +177,6 @@ export default function Dashboard() {
               ) : (
                 <div className="text-center py-4">
                   <p className="text-muted-foreground">No recent sales data available</p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    {billsError ? 'Unable to fetch bills from Google Sheets' : 'No bills found'}
-                  </p>
                 </div>
               )}
             </div>
@@ -190,7 +194,7 @@ export default function Dashboard() {
           <CardContent>
             <div className="space-y-4">
               {lowStockItems.length > 0 ? (
-                lowStockItems.slice(0, 3).map((item: Product, index) => (
+                lowStockItems.slice(0, 3).map((item, index) => (
                   <div key={index} className="flex items-center justify-between p-3 border border-yellow-200 bg-yellow-50 rounded-lg">
                     <div>
                       <p className="font-medium">{item["Product Name"]}</p>
