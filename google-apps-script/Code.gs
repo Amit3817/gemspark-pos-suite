@@ -2,8 +2,7 @@
 // Jewelry Management System - Google Apps Script
 // This script handles all API endpoints for the jewelry management system
 
-// Configuration - Update these with your actual Google Sheets IDs
-const SPREADSHEET_ID = 'YOUR_SPREADSHEET_ID_HERE'; // Replace with your Google Sheets ID
+// Configuration - Update these with your actual Google Sheets sheet names
 const PRODUCTS_SHEET_NAME = 'Products';
 const BILLS_SHEET_NAME = 'Bills';
 const CUSTOMERS_SHEET_NAME = 'Customers';
@@ -80,7 +79,7 @@ function createResponse(status, message, data) {
   };
   
   return ContentService
-    .createTextOutput(JSON.stringify(data || response))
+    .createTextOutput(JSON.stringify(response))
     .setMimeType(ContentService.MimeType.JSON)
     .setHeader('Access-Control-Allow-Origin', '*')
     .setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS')
@@ -90,7 +89,7 @@ function createResponse(status, message, data) {
 // Product Functions
 function getAllProducts() {
   console.log('Getting all products');
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(PRODUCTS_SHEET_NAME);
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(PRODUCTS_SHEET_NAME);
   
   if (!sheet) {
     console.error('Products sheet not found');
@@ -120,7 +119,7 @@ function getAllProducts() {
 
 function addProduct(productData) {
   console.log('Adding product:', productData);
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(PRODUCTS_SHEET_NAME);
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(PRODUCTS_SHEET_NAME);
   
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
   const newRow = headers.map(header => productData[header] || '');
@@ -132,7 +131,7 @@ function addProduct(productData) {
 
 function updateProduct(productData) {
   console.log('Updating product:', productData);
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(PRODUCTS_SHEET_NAME);
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(PRODUCTS_SHEET_NAME);
   
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
@@ -154,7 +153,7 @@ function updateProduct(productData) {
 
 function deleteProduct(data) {
   console.log('Deleting product:', data.productId);
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(PRODUCTS_SHEET_NAME);
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(PRODUCTS_SHEET_NAME);
   
   const dataRange = sheet.getDataRange().getValues();
   const headers = dataRange[0];
@@ -173,7 +172,7 @@ function deleteProduct(data) {
 // Bill Functions
 function getAllBills() {
   console.log('Getting all bills');
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(BILLS_SHEET_NAME);
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(BILLS_SHEET_NAME);
   
   if (!sheet) {
     console.error('Bills sheet not found');
@@ -203,7 +202,7 @@ function getAllBills() {
 
 function addBill(billData) {
   console.log('Adding bill:', billData);
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(BILLS_SHEET_NAME);
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(BILLS_SHEET_NAME);
   
   // Add current date and calculate total amount
   billData['Date'] = new Date().toISOString().split('T')[0];
@@ -231,7 +230,7 @@ function addBill(billData) {
 
 function deleteBill(data) {
   console.log('Deleting bill:', data.billNo);
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(BILLS_SHEET_NAME);
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(BILLS_SHEET_NAME);
   
   const dataRange = sheet.getDataRange().getValues();
   const headers = dataRange[0];
@@ -250,7 +249,7 @@ function deleteBill(data) {
 // Customer Functions
 function getAllCustomers() {
   console.log('Getting all customers');
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(CUSTOMERS_SHEET_NAME);
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CUSTOMERS_SHEET_NAME);
   
   if (!sheet) {
     console.error('Customers sheet not found');
@@ -280,7 +279,7 @@ function getAllCustomers() {
 
 function addCustomer(customerData) {
   console.log('Adding customer:', customerData);
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(CUSTOMERS_SHEET_NAME);
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CUSTOMERS_SHEET_NAME);
   
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
   const newRow = headers.map(header => customerData[header] || '');
@@ -293,7 +292,7 @@ function addCustomer(customerData) {
 // Inventory Functions
 function getAllInventory() {
   console.log('Getting all inventory');
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(INVENTORY_SHEET_NAME);
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(INVENTORY_SHEET_NAME);
   
   if (!sheet) {
     console.error('Inventory sheet not found');
@@ -323,7 +322,7 @@ function getAllInventory() {
 
 function updateInventory(itemData) {
   console.log('Updating inventory item:', itemData);
-  const sheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(INVENTORY_SHEET_NAME);
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(INVENTORY_SHEET_NAME);
   
   const data = sheet.getDataRange().getValues();
   const headers = data[0];
@@ -347,9 +346,9 @@ function updateInventory(itemData) {
 function getDashboardStats() {
   console.log('Getting dashboard stats');
   
-  const productsSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(PRODUCTS_SHEET_NAME);
-  const billsSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(BILLS_SHEET_NAME);
-  const customersSheet = SpreadsheetApp.openById(SPREADSHEET_ID).getSheetByName(CUSTOMERS_SHEET_NAME);
+  const productsSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(PRODUCTS_SHEET_NAME);
+  const billsSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(BILLS_SHEET_NAME);
+  const customersSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CUSTOMERS_SHEET_NAME);
   
   const stats = {
     totalSales: 0,
