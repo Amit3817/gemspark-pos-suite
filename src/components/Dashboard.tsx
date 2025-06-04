@@ -1,9 +1,11 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useNavigate } from "react-router-dom";
 import { useAppContext } from "@/contexts/AppContext";
+import SampleDataLoader from "./SampleDataLoader";
 
 export default function Dashboard() {
   const { t } = useLanguage();
@@ -94,6 +96,21 @@ export default function Dashboard() {
           </Button>
         </div>
       </div>
+
+      {/* Sample Data Loader - Show only if no data exists */}
+      {totalProducts === 0 && totalCustomers === 0 && bills.length === 0 && (
+        <Card className="border-2 border-blue-300 bg-blue-50">
+          <CardHeader>
+            <CardTitle className="text-blue-800">Welcome to your Jewelry POS System!</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-blue-700 mb-4">
+              Your database is empty. Load some sample data to get started and see how the system works.
+            </p>
+            <SampleDataLoader />
+          </CardContent>
+        </Card>
+      )}
 
       {/* Market Prices Section */}
       <Card className="border-2 border-yellow-300 shadow-lg">
@@ -255,7 +272,7 @@ export default function Dashboard() {
               onClick={() => navigate('/reports')}
             >
               <span className="text-2xl">📊</span>
-              <span>{t('common.viewReports')}</span>
+              <span>View Reports</span>
             </Button>
           </div>
         </CardContent>

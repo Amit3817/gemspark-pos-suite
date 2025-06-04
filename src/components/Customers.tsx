@@ -1,13 +1,13 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Customer } from "@/services/googleSheetsApi";
+import { Customer } from "@/services/supabaseApi";
 import { useToast } from "@/hooks/use-toast";
 import { useAppContext } from "@/contexts/AppContext";
-import { testGoogleScript, testWithJsonp } from "@/services/testGoogleScript";
 
 export default function Customers() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -16,26 +16,6 @@ export default function Customers() {
   const { customers, isLoadingCustomers, refreshData } = useAppContext();
 
   console.log('Customers component - data:', customers);
-
-  const handleTestConnection = async () => {
-    toast({
-      title: "Testing Connection",
-      description: "Running connection tests...",
-    });
-    
-    console.log('=== Starting Google Apps Script Connection Tests ===');
-    
-    const test1 = await testGoogleScript();
-    console.log('Test 1 (Fetch):', test1);
-    
-    const test2 = await testWithJsonp();
-    console.log('Test 2 (JSONP):', test2);
-    
-    toast({
-      title: "Tests Complete",
-      description: "Check console for results",
-    });
-  };
 
   const filteredCustomers = customers.filter((customer: Customer) =>
     customer["Name"].toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -99,9 +79,6 @@ export default function Customers() {
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
         <h2 className="text-2xl md:text-3xl font-bold text-primary">{t('customers.title')}</h2>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleTestConnection}>
-            Test Connection
-          </Button>
           <Button variant="outline" onClick={refreshData}>
             Refresh Data
           </Button>

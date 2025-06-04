@@ -9,7 +9,183 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      bills: {
+        Row: {
+          bill_no: string
+          carat: string | null
+          created_at: string
+          customer_name: string
+          date: string
+          gst_percent: number | null
+          id: string
+          making_charges: number | null
+          metal_type: string | null
+          phone_number: string | null
+          product_id: string | null
+          product_name: string | null
+          rate_per_g: number | null
+          total_amount: number | null
+          updated_at: string
+          weight_g: number | null
+        }
+        Insert: {
+          bill_no: string
+          carat?: string | null
+          created_at?: string
+          customer_name: string
+          date?: string
+          gst_percent?: number | null
+          id?: string
+          making_charges?: number | null
+          metal_type?: string | null
+          phone_number?: string | null
+          product_id?: string | null
+          product_name?: string | null
+          rate_per_g?: number | null
+          total_amount?: number | null
+          updated_at?: string
+          weight_g?: number | null
+        }
+        Update: {
+          bill_no?: string
+          carat?: string | null
+          created_at?: string
+          customer_name?: string
+          date?: string
+          gst_percent?: number | null
+          id?: string
+          making_charges?: number | null
+          metal_type?: string | null
+          phone_number?: string | null
+          product_id?: string | null
+          product_name?: string | null
+          rate_per_g?: number | null
+          total_amount?: number | null
+          updated_at?: string
+          weight_g?: number | null
+        }
+        Relationships: []
+      }
+      customers: {
+        Row: {
+          created_at: string
+          customer_id: string
+          email: string | null
+          id: string
+          last_visit: string | null
+          name: string
+          phone: string | null
+          status: string | null
+          total_purchases: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          customer_id: string
+          email?: string | null
+          id?: string
+          last_visit?: string | null
+          name: string
+          phone?: string | null
+          status?: string | null
+          total_purchases?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          customer_id?: string
+          email?: string | null
+          id?: string
+          last_visit?: string | null
+          name?: string
+          phone?: string | null
+          status?: string | null
+          total_purchases?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      inventory: {
+        Row: {
+          category: string | null
+          created_at: string
+          current_stock: number | null
+          id: string
+          last_updated: string
+          minimum_stock: number | null
+          product_id: string
+          product_name: string
+          updated_at: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          current_stock?: number | null
+          id?: string
+          last_updated?: string
+          minimum_stock?: number | null
+          product_id: string
+          product_name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          current_stock?: number | null
+          id?: string
+          last_updated?: string
+          minimum_stock?: number | null
+          product_id?: string
+          product_name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      products: {
+        Row: {
+          carat: string | null
+          category: string
+          created_at: string
+          id: string
+          metal_type: string | null
+          notes: string | null
+          product_id: string
+          product_name: string
+          quantity: number | null
+          rate_per_g: number | null
+          updated_at: string
+          weight_g: number | null
+        }
+        Insert: {
+          carat?: string | null
+          category: string
+          created_at?: string
+          id?: string
+          metal_type?: string | null
+          notes?: string | null
+          product_id: string
+          product_name: string
+          quantity?: number | null
+          rate_per_g?: number | null
+          updated_at?: string
+          weight_g?: number | null
+        }
+        Update: {
+          carat?: string | null
+          category?: string
+          created_at?: string
+          id?: string
+          metal_type?: string | null
+          notes?: string | null
+          product_id?: string
+          product_name?: string
+          quantity?: number | null
+          rate_per_g?: number | null
+          updated_at?: string
+          weight_g?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
-import { Product, Bill, Customer, InventoryItem, googleSheetsApi } from '@/services/googleSheetsApi';
+
+import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { Product, Bill, Customer, InventoryItem, supabaseApi } from '@/services/supabaseApi';
 import { useToast } from '@/hooks/use-toast';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 
@@ -66,11 +67,11 @@ interface AppProviderProps {
   children: ReactNode;
 }
 
-// Helper function to clean data from Google Sheets
+// Helper function to clean data from Supabase
 const cleanBillData = (bills: any[]): Bill[] => {
   return bills.map(bill => ({
     ...bill,
-    "Customer Name": bill["Customer Name\t"] || bill["Customer Name"] || "Unknown Customer",
+    "Customer Name": bill["Customer Name"] || "Unknown Customer",
     "Total Amount": typeof bill["Total Amount"] === 'number' ? bill["Total Amount"] : parseFloat(bill["Total Amount"]) || 0
   }));
 };
@@ -92,31 +93,31 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Central data fetching with React Query
+  // Central data fetching with React Query using Supabase
   const { data: products = [], isLoading: isLoadingProducts } = useQuery({
     queryKey: ['products'],
-    queryFn: googleSheetsApi.getAllProducts,
+    queryFn: supabaseApi.getAllProducts,
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
   });
 
   const { data: billsData = [], isLoading: isLoadingBills } = useQuery({
     queryKey: ['bills'],
-    queryFn: googleSheetsApi.getAllBills,
+    queryFn: supabaseApi.getAllBills,
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
   });
 
   const { data: customersData = [], isLoading: isLoadingCustomers } = useQuery({
     queryKey: ['customers'],
-    queryFn: googleSheetsApi.getAllCustomers,
+    queryFn: supabaseApi.getAllCustomers,
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
   });
 
   const { data: inventory = [], isLoading: isLoadingInventory } = useQuery({
     queryKey: ['inventory'],
-    queryFn: googleSheetsApi.getAllInventory,
+    queryFn: supabaseApi.getAllInventory,
     staleTime: 5 * 60 * 1000, // 5 minutes
     refetchOnWindowFocus: false,
   });
@@ -151,7 +152,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const addProduct = async (product: Product) => {
     setIsLoading(true);
     try {
-      const response = await googleSheetsApi.addProduct(product);
+      const response = await supabaseApi.addProduct(product);
       if (response.status === 'success') {
         await queryClient.invalidateQueries({ queryKey: ['products'] });
         toast({
@@ -176,7 +177,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const updateProduct = async (product: Product) => {
     setIsLoading(true);
     try {
-      const response = await googleSheetsApi.updateProduct(product);
+      const response = await supabaseApi.updateProduct(product);
       if (response.status === 'success') {
         await queryClient.invalidateQueries({ queryKey: ['products'] });
         toast({
@@ -202,7 +203,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const deleteProduct = async (productId: string) => {
     setIsLoading(true);
     try {
-      const response = await googleSheetsApi.deleteProduct(productId);
+      const response = await supabaseApi.deleteProduct(productId);
       if (response.status === 'success') {
         await queryClient.invalidateQueries({ queryKey: ['products'] });
         toast({
@@ -226,7 +227,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const addBill = async (bill: Omit<Bill, 'Date' | 'Total Amount'>) => {
     setIsLoading(true);
     try {
-      const response = await googleSheetsApi.addBill(bill);
+      const response = await supabaseApi.addBill(bill);
       if (response.status === 'success') {
         await queryClient.invalidateQueries({ queryKey: ['bills'] });
         toast({
@@ -250,7 +251,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const deleteBill = async (billNo: string) => {
     setIsLoading(true);
     try {
-      const response = await googleSheetsApi.deleteBill(billNo);
+      const response = await supabaseApi.deleteBill(billNo);
       if (response.status === 'success') {
         await queryClient.invalidateQueries({ queryKey: ['bills'] });
         toast({
@@ -274,7 +275,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const addCustomer = async (customer: Customer) => {
     setIsLoading(true);
     try {
-      const response = await googleSheetsApi.addCustomer(customer);
+      const response = await supabaseApi.addCustomer(customer);
       if (response.status === 'success') {
         await queryClient.invalidateQueries({ queryKey: ['customers'] });
         toast({
@@ -298,7 +299,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   const updateInventory = async (item: InventoryItem) => {
     setIsLoading(true);
     try {
-      const response = await googleSheetsApi.updateInventory(item);
+      const response = await supabaseApi.updateInventory(item);
       if (response.status === 'success') {
         await queryClient.invalidateQueries({ queryKey: ['inventory'] });
         toast({
