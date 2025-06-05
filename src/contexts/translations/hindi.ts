@@ -1,4 +1,3 @@
-
 export const hindiTranslations = {
   // Header
   'header.title': 'GemSpark POS',
@@ -293,5 +292,6 @@ export const hindiTranslations = {
   'common.adequate': 'पर्याप्त',
   'common.unknown': 'अज्ञात',
   'common.download': 'डाउनलोड',
-  'common.share': 'साझा करें'
+  'common.share': 'साझा करें',
+  'common.clear': 'साफ़ करें'
 };

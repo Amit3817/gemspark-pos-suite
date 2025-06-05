@@ -1,4 +1,3 @@
-
 export const englishTranslations = {
   // Header
   'header.title': 'GemSpark POS',
@@ -293,5 +292,6 @@ export const englishTranslations = {
   'common.adequate': 'Adequate',
   'common.unknown': 'Unknown',
   'common.download': 'Download',
-  'common.share': 'Share'
+  'common.share': 'Share',
+  'common.clear': 'Clear'
 };
