@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,7 +7,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useQuery } from "@tanstack/react-query";
-import { googleSheetsApi, Product } from "@/services/googleSheetsApi";
+import { supabaseApi, Product } from "@/services/supabaseApi";
 import { useAppContext } from "@/contexts/AppContext";
 import { useToast } from "@/hooks/use-toast";
 
@@ -29,11 +28,14 @@ export default function BillingSystem() {
   });
   const [searchTerm, setSearchTerm] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cash");
+  const [goldPrice, setGoldPrice] = useState<number>(0);
+  const [silverPrice, setSilverPrice] = useState<number>(0);
+  const [makingChargesPercent, setMakingChargesPercent] = useState<number>(10);
 
   // Fetch products for selection
   const { data: products = [] } = useQuery({
     queryKey: ['products'],
-    queryFn: googleSheetsApi.getAllProducts,
+    queryFn: supabaseApi.getAllProducts,
   });
 
   const filteredProducts = products.filter(product =>
@@ -74,14 +76,19 @@ export default function BillingSystem() {
     }
   };
 
+  // Check if cart has gold, silver, or mixed items
+  const hasGoldItems = cartItems.some(item => item["Metal Type"]?.toLowerCase().includes("gold"));
+  const hasSilverItems = cartItems.some(item => item["Metal Type"]?.toLowerCase().includes("silver"));
+
   const subtotal = cartItems.reduce((sum, item) => {
     const itemPrice = (item["Weight (g)"] * item["Rate per g"]) || 0;
     return sum + (itemPrice * item.cartQuantity);
   }, 0);
 
+  const makingCharges = (subtotal * makingChargesPercent) / 100;
   const gstPercent = 3;
-  const gstAmount = (subtotal * gstPercent) / 100;
-  const total = subtotal + gstAmount;
+  const gstAmount = (subtotal + makingCharges) * (gstPercent / 100);
+  const total = subtotal + makingCharges + gstAmount;
 
   const handleCompleteSale = async () => {
     if (cartItems.length === 0) {
@@ -102,6 +109,25 @@ export default function BillingSystem() {
       return;
     }
 
+    // Validate prices based on metal types
+    if (hasGoldItems && goldPrice <= 0) {
+      toast({
+        title: "Error",
+        description: "Please enter gold price for gold items",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (hasSilverItems && silverPrice <= 0) {
+      toast({
+        title: "Error",
+        description: "Please enter silver price for silver items",
+        variant: "destructive",
+      });
+      return;
+    }
+
     try {
       // Create bills for each cart item
       for (const item of cartItems) {
@@ -117,8 +143,11 @@ export default function BillingSystem() {
           "Carat": item.Carat,
           "Weight (g)": item["Weight (g)"] * item.cartQuantity,
           "Rate per g": item["Rate per g"],
-          "Making Charges": 0,
+          "Making Charges": makingCharges,
+          "Making Charges Percent": makingChargesPercent,
           "GST (%)": gstPercent,
+          "Gold Price per 10g": hasGoldItems ? goldPrice : 0,
+          "Silver Price per 10g": hasSilverItems ? silverPrice : 0,
         };
 
         await addBill(bill);
@@ -127,6 +156,8 @@ export default function BillingSystem() {
       // Clear cart and customer info
       setCartItems([]);
       setCustomerInfo({ name: "", phone: "", email: "" });
+      setGoldPrice(0);
+      setSilverPrice(0);
       
       toast({
         title: "Sale Completed",
@@ -288,6 +319,49 @@ export default function BillingSystem() {
             </CardContent>
           </Card>
 
+          {/* Pricing Information */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Metal Prices</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {hasGoldItems && (
+                <div>
+                  <Label htmlFor="gold-price">Gold Price (per 10g)</Label>
+                  <Input
+                    id="gold-price"
+                    type="number"
+                    value={goldPrice}
+                    onChange={(e) => setGoldPrice(Number(e.target.value))}
+                    placeholder="Enter gold price per 10g"
+                  />
+                </div>
+              )}
+              {hasSilverItems && (
+                <div>
+                  <Label htmlFor="silver-price">Silver Price (per 10g)</Label>
+                  <Input
+                    id="silver-price"
+                    type="number"
+                    value={silverPrice}
+                    onChange={(e) => setSilverPrice(Number(e.target.value))}
+                    placeholder="Enter silver price per 10g"
+                  />
+                </div>
+              )}
+              <div>
+                <Label htmlFor="making-charges">Making Charges (%)</Label>
+                <Input
+                  id="making-charges"
+                  type="number"
+                  value={makingChargesPercent}
+                  onChange={(e) => setMakingChargesPercent(Number(e.target.value))}
+                  placeholder="Enter making charges percentage"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Bill Summary */}
           <Card>
             <CardHeader>
@@ -298,6 +372,10 @@ export default function BillingSystem() {
                 <div className="flex justify-between">
                   <span>{t('billing.subtotal')}:</span>
                   <span>₹{subtotal.toLocaleString()}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Making Charges ({makingChargesPercent}%):</span>
+                  <span>₹{makingCharges.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>{t('billing.gst')} ({gstPercent}%):</span>

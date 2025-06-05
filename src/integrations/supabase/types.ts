@@ -16,14 +16,17 @@ export type Database = {
           created_at: string
           customer_name: string
           date: string
+          gold_price_per_10g: number | null
           gst_percent: number | null
           id: string
           making_charges: number | null
+          making_charges_percent: number | null
           metal_type: string | null
           phone_number: string | null
           product_id: string | null
           product_name: string | null
           rate_per_g: number | null
+          silver_price_per_10g: number | null
           total_amount: number | null
           updated_at: string
           weight_g: number | null
@@ -34,14 +37,17 @@ export type Database = {
           created_at?: string
           customer_name: string
           date?: string
+          gold_price_per_10g?: number | null
           gst_percent?: number | null
           id?: string
           making_charges?: number | null
+          making_charges_percent?: number | null
           metal_type?: string | null
           phone_number?: string | null
           product_id?: string | null
           product_name?: string | null
           rate_per_g?: number | null
+          silver_price_per_10g?: number | null
           total_amount?: number | null
           updated_at?: string
           weight_g?: number | null
@@ -52,14 +58,17 @@ export type Database = {
           created_at?: string
           customer_name?: string
           date?: string
+          gold_price_per_10g?: number | null
           gst_percent?: number | null
           id?: string
           making_charges?: number | null
+          making_charges_percent?: number | null
           metal_type?: string | null
           phone_number?: string | null
           product_id?: string | null
           product_name?: string | null
           rate_per_g?: number | null
+          silver_price_per_10g?: number | null
           total_amount?: number | null
           updated_at?: string
           weight_g?: number | null

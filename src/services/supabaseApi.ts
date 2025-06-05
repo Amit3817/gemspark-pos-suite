@@ -26,7 +26,10 @@ export interface Bill {
   "Weight (g)": number;
   "Rate per g": number;
   "Making Charges": number;
+  "Making Charges Percent": number;
   "GST (%)": number;
+  "Gold Price per 10g": number;
+  "Silver Price per 10g": number;
   "Total Amount": number;
 }
 
@@ -84,7 +87,10 @@ const transformBill = (row: any): Bill => ({
   "Weight (g)": parseFloat(row.weight_g) || 0,
   "Rate per g": parseFloat(row.rate_per_g) || 0,
   "Making Charges": parseFloat(row.making_charges) || 0,
+  "Making Charges Percent": parseFloat(row.making_charges_percent) || 0,
   "GST (%)": parseFloat(row.gst_percent) || 0,
+  "Gold Price per 10g": parseFloat(row.gold_price_per_10g) || 0,
+  "Silver Price per 10g": parseFloat(row.silver_price_per_10g) || 0,
   "Total Amount": parseFloat(row.total_amount) || 0
 });
 
@@ -255,7 +261,10 @@ export const addBill = async (bill: Omit<Bill, 'Date' | 'Total Amount'>) => {
       weight_g: bill["Weight (g)"],
       rate_per_g: bill["Rate per g"],
       making_charges: bill["Making Charges"],
+      making_charges_percent: bill["Making Charges Percent"],
       gst_percent: bill["GST (%)"],
+      gold_price_per_10g: bill["Gold Price per 10g"],
+      silver_price_per_10g: bill["Silver Price per 10g"],
       total_amount: totalAmount
     });
 

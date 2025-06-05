@@ -73,7 +73,11 @@ const cleanBillData = (bills: any[]): Bill[] => {
   return bills.map(bill => ({
     ...bill,
     "Customer Name": bill["Customer Name"] || "Unknown Customer",
-    "Total Amount": typeof bill["Total Amount"] === 'number' ? bill["Total Amount"] : parseFloat(bill["Total Amount"]) || 0
+    "Total Amount": typeof bill["Total Amount"] === 'number' ? bill["Total Amount"] : parseFloat(bill["Total Amount"]) || 0,
+    "Making Charges": typeof bill["Making Charges"] === 'number' ? bill["Making Charges"] : parseFloat(bill["Making Charges"]) || 0,
+    "Making Charges Percent": typeof bill["Making Charges Percent"] === 'number' ? bill["Making Charges Percent"] : parseFloat(bill["Making Charges Percent"]) || 0,
+    "Gold Price per 10g": typeof bill["Gold Price per 10g"] === 'number' ? bill["Gold Price per 10g"] : parseFloat(bill["Gold Price per 10g"]) || 0,
+    "Silver Price per 10g": typeof bill["Silver Price per 10g"] === 'number' ? bill["Silver Price per 10g"] : parseFloat(bill["Silver Price per 10g"]) || 0
   }));
 };
 
