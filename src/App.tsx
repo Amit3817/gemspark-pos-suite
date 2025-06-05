@@ -6,6 +6,11 @@ import { AppProvider } from '@/contexts/AppContext';
 import { Toaster } from '@/components/ui/toaster';
 import Layout from '@/components/Layout';
 import Index from '@/pages/Index';
+import ProductsPage from '@/pages/ProductsPage';
+import BillingPage from '@/pages/BillingPage';
+import CustomersPage from '@/pages/CustomersPage';
+import ReportsPage from '@/pages/ReportsPage';
+import SettingsPage from '@/pages/SettingsPage';
 import NotFound from '@/pages/NotFound';
 import AddProductModal from '@/components/AddProductModal';
 import EditProductModal from '@/components/EditProductModal';
@@ -31,6 +36,11 @@ function App() {
               <Routes>
                 <Route path="/" element={<Layout />}>
                   <Route index element={<Index />} />
+                  <Route path="products" element={<ProductsPage />} />
+                  <Route path="billing" element={<BillingPage />} />
+                  <Route path="customers" element={<CustomersPage />} />
+                  <Route path="reports" element={<ReportsPage />} />
+                  <Route path="settings" element={<SettingsPage />} />
                   <Route path="*" element={<NotFound />} />
                 </Route>
               </Routes>
