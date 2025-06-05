@@ -3,13 +3,9 @@ import { SidebarProvider, SidebarTrigger } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/AppSidebar";
 import { LanguageToggle } from "@/components/LanguageToggle";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { ReactNode } from "react";
+import { Outlet } from "react-router-dom";
 
-interface LayoutProps {
-  children: ReactNode;
-}
-
-export default function Layout({ children }: LayoutProps) {
+export default function Layout() {
   const { t } = useLanguage();
 
   return (
@@ -32,7 +28,7 @@ export default function Layout({ children }: LayoutProps) {
             </div>
           </header>
           <main className="flex-1 p-4 md:p-6 overflow-y-auto">
-            {children}
+            <Outlet />
           </main>
         </div>
       </div>
