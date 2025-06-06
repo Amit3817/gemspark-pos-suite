@@ -13,6 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface CartItem extends Product {
   cartQuantity: number;
+  calculatedRate: number; // Rate calculated based on metal type and current prices
 }
 
 export default function BillingSystem() {
@@ -43,22 +44,63 @@ export default function BillingSystem() {
     product.Category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  // Calculate rate based on metal type and weight
+  const calculateRate = (product: Product): number => {
+    const metalType = product["Metal Type"]?.toLowerCase();
+    const weight = product["Weight (g)"];
+    
+    if (metalType?.includes("gold") && goldPrice > 0) {
+      return (goldPrice / 10) * weight; // Convert per 10g to per gram, then multiply by weight
+    } else if (metalType?.includes("silver") && silverPrice > 0) {
+      return (silverPrice / 10) * weight; // Convert per 10g to per gram, then multiply by weight
+    }
+    return 0;
+  };
+
   const addToCart = (product: Product) => {
+    const calculatedRate = calculateRate(product);
+    
+    if (calculatedRate === 0) {
+      const metalType = product["Metal Type"]?.toLowerCase();
+      const missingPrice = metalType?.includes("gold") ? "gold" : "silver";
+      toast({
+        title: "Price Required",
+        description: `Please set ${missingPrice} price before adding this item`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     const existingItem = cartItems.find(item => item["Product ID"] === product["Product ID"]);
     if (existingItem) {
       setCartItems(cartItems.map(item =>
         item["Product ID"] === product["Product ID"]
-          ? { ...item, cartQuantity: item.cartQuantity + 1 }
+          ? { ...item, cartQuantity: item.cartQuantity + 1, calculatedRate }
           : item
       ));
     } else {
-      setCartItems([...cartItems, { ...product, cartQuantity: 1 }]);
+      setCartItems([...cartItems, { ...product, cartQuantity: 1, calculatedRate }]);
     }
     toast({
       title: "Added to Cart",
       description: `${product["Product Name"]} added to cart`,
     });
   };
+
+  // Update cart rates when prices change
+  const updateCartRates = () => {
+    setCartItems(cartItems.map(item => ({
+      ...item,
+      calculatedRate: calculateRate(item)
+    })));
+  };
+
+  // Update rates when gold or silver price changes
+  React.useEffect(() => {
+    if (cartItems.length > 0) {
+      updateCartRates();
+    }
+  }, [goldPrice, silverPrice]);
 
   const removeFromCart = (productId: string) => {
     setCartItems(cartItems.filter(item => item["Product ID"] !== productId));
@@ -81,8 +123,7 @@ export default function BillingSystem() {
   const hasSilverItems = cartItems.some(item => item["Metal Type"]?.toLowerCase().includes("silver"));
 
   const subtotal = cartItems.reduce((sum, item) => {
-    const itemPrice = (item["Weight (g)"] * item["Rate per g"]) || 0;
-    return sum + (itemPrice * item.cartQuantity);
+    return sum + (item.calculatedRate * item.cartQuantity);
   }, 0);
 
   const makingCharges = (subtotal * makingChargesPercent) / 100;
@@ -142,7 +183,7 @@ export default function BillingSystem() {
           "Metal Type": item["Metal Type"],
           "Carat": item.Carat,
           "Weight (g)": item["Weight (g)"] * item.cartQuantity,
-          "Rate per g": item["Rate per g"],
+          "Rate per g": item.calculatedRate / item["Weight (g)"], // Rate per gram
           "Making Charges": makingCharges,
           "Making Charges Percent": makingChargesPercent,
           "GST (%)": gstPercent,
@@ -185,6 +226,35 @@ export default function BillingSystem() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Product Selection */}
         <div className="lg:col-span-2 space-y-6">
+          {/* Pricing Information - Moved to top for better UX */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Metal Prices (Required for Adding Items)</CardTitle>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="gold-price">Gold Price (per 10g)</Label>
+                <Input
+                  id="gold-price"
+                  type="number"
+                  value={goldPrice}
+                  onChange={(e) => setGoldPrice(Number(e.target.value))}
+                  placeholder="Enter gold price per 10g"
+                />
+              </div>
+              <div>
+                <Label htmlFor="silver-price">Silver Price (per 10g)</Label>
+                <Input
+                  id="silver-price"
+                  type="number"
+                  value={silverPrice}
+                  onChange={(e) => setSilverPrice(Number(e.target.value))}
+                  placeholder="Enter silver price per 10g"
+                />
+              </div>
+            </CardContent>
+          </Card>
+
           <Card>
             <CardHeader>
               <CardTitle>{t('billing.addProducts')}</CardTitle>
@@ -202,24 +272,29 @@ export default function BillingSystem() {
               
               {/* Product List */}
               <div className="max-h-60 overflow-y-auto space-y-2">
-                {filteredProducts.map((product) => (
-                  <div key={product["Product ID"]} className="flex items-center justify-between p-3 border rounded-lg">
-                    <div>
-                      <h4 className="font-medium">{product["Product Name"]}</h4>
-                      <p className="text-sm text-muted-foreground">
-                        {product.Category} • {product["Metal Type"]} • Stock: {product.Quantity}
-                      </p>
-                      <p className="text-sm font-medium">₹{(product["Weight (g)"] * product["Rate per g"]).toLocaleString()}</p>
+                {filteredProducts.map((product) => {
+                  const calculatedRate = calculateRate(product);
+                  return (
+                    <div key={product["Product ID"]} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div>
+                        <h4 className="font-medium">{product["Product Name"]}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {product.Category} • {product["Metal Type"]} • Stock: {product.Quantity}
+                        </p>
+                        <p className="text-sm font-medium">
+                          {calculatedRate > 0 ? `₹${calculatedRate.toLocaleString()}` : 'Set metal price first'}
+                        </p>
+                      </div>
+                      <Button 
+                        size="sm" 
+                        onClick={() => addToCart(product)}
+                        disabled={product.Quantity === 0 || calculatedRate === 0}
+                      >
+                        Add to Cart
+                      </Button>
                     </div>
-                    <Button 
-                      size="sm" 
-                      onClick={() => addToCart(product)}
-                      disabled={product.Quantity === 0}
-                    >
-                      Add to Cart
-                    </Button>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </CardContent>
           </Card>
@@ -239,7 +314,7 @@ export default function BillingSystem() {
                       <div className="flex-1">
                         <h4 className="font-medium">{item["Product Name"]}</h4>
                         <p className="text-sm text-muted-foreground">
-                          ₹{(item["Weight (g)"] * item["Rate per g"]).toLocaleString()} per item
+                          ₹{item.calculatedRate.toLocaleString()} per item
                         </p>
                       </div>
                       <div className="flex items-center space-x-4">
@@ -262,7 +337,7 @@ export default function BillingSystem() {
                           </Button>
                         </div>
                         <p className="font-medium w-24 text-right">
-                          ₹{((item["Weight (g)"] * item["Rate per g"]) * item.cartQuantity).toLocaleString()}
+                          ₹{(item.calculatedRate * item.cartQuantity).toLocaleString()}
                         </p>
                         <Button 
                           size="sm" 
@@ -319,36 +394,12 @@ export default function BillingSystem() {
             </CardContent>
           </Card>
 
-          {/* Pricing Information */}
+          {/* Making Charges */}
           <Card>
             <CardHeader>
-              <CardTitle>Metal Prices</CardTitle>
+              <CardTitle>Additional Charges</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              {hasGoldItems && (
-                <div>
-                  <Label htmlFor="gold-price">Gold Price (per 10g)</Label>
-                  <Input
-                    id="gold-price"
-                    type="number"
-                    value={goldPrice}
-                    onChange={(e) => setGoldPrice(Number(e.target.value))}
-                    placeholder="Enter gold price per 10g"
-                  />
-                </div>
-              )}
-              {hasSilverItems && (
-                <div>
-                  <Label htmlFor="silver-price">Silver Price (per 10g)</Label>
-                  <Input
-                    id="silver-price"
-                    type="number"
-                    value={silverPrice}
-                    onChange={(e) => setSilverPrice(Number(e.target.value))}
-                    placeholder="Enter silver price per 10g"
-                  />
-                </div>
-              )}
+            <CardContent>
               <div>
                 <Label htmlFor="making-charges">Making Charges (%)</Label>
                 <Input

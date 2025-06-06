@@ -161,7 +161,6 @@ export type Database = {
           product_id: string
           product_name: string
           quantity: number | null
-          rate_per_g: number | null
           updated_at: string
           weight_g: number | null
         }
@@ -175,7 +174,6 @@ export type Database = {
           product_id: string
           product_name: string
           quantity?: number | null
-          rate_per_g?: number | null
           updated_at?: string
           weight_g?: number | null
         }
@@ -189,7 +187,6 @@ export type Database = {
           product_id?: string
           product_name?: string
           quantity?: number | null
-          rate_per_g?: number | null
           updated_at?: string
           weight_g?: number | null
         }

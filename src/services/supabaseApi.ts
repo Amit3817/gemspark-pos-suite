@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 
 // Types matching your existing interfaces
@@ -9,7 +8,6 @@ export interface Product {
   "Carat": string;
   "Weight (g)": number;
   "Quantity": number;
-  "Rate per g": number;
   "Metal Type": string;
   "Notes": string;
 }
@@ -60,7 +58,6 @@ const transformProduct = (row: any): Product => ({
   "Carat": row.carat || '',
   "Weight (g)": parseFloat(row.weight_g) || 0,
   "Quantity": row.quantity || 0,
-  "Rate per g": parseFloat(row.rate_per_g) || 0,
   "Metal Type": row.metal_type || '',
   "Notes": row.notes || ''
 });
@@ -131,7 +128,6 @@ export const addProduct = async (product: Product) => {
       carat: product["Carat"],
       weight_g: product["Weight (g)"],
       quantity: product["Quantity"],
-      rate_per_g: product["Rate per g"],
       metal_type: product["Metal Type"],
       notes: product["Notes"]
     });
@@ -154,7 +150,6 @@ export const updateProduct = async (product: Product) => {
       carat: product["Carat"],
       weight_g: product["Weight (g)"],
       quantity: product["Quantity"],
-      rate_per_g: product["Rate per g"],
       metal_type: product["Metal Type"],
       notes: product["Notes"]
     })

@@ -15,7 +15,7 @@ export default function SampleDataLoader() {
         description: "Adding sample products, customers, and bills...",
       });
 
-      // Sample products
+      // Sample products (removed rate_per_g)
       const sampleProducts = [
         {
           "Product ID": "P001",
@@ -24,7 +24,6 @@ export default function SampleDataLoader() {
           "Carat": "22K",
           "Weight (g)": 10,
           "Quantity": 5,
-          "Rate per g": 5200,
           "Metal Type": "Gold",
           "Notes": "Classic Design"
         },
@@ -35,7 +34,6 @@ export default function SampleDataLoader() {
           "Carat": "18K",
           "Weight (g)": 25,
           "Quantity": 3,
-          "Rate per g": 4800,
           "Metal Type": "Gold",
           "Notes": "Premium Collection"
         },
@@ -46,7 +44,6 @@ export default function SampleDataLoader() {
           "Carat": "92.5",
           "Weight (g)": 8,
           "Quantity": 10,
-          "Rate per g": 850,
           "Metal Type": "Silver",
           "Notes": "Handcrafted"
         }
@@ -93,7 +90,7 @@ export default function SampleDataLoader() {
         await supabaseApi.addCustomer(customer);
       }
 
-      // Sample bill
+      // Sample bill (updated with new required fields)
       await supabaseApi.addBill({
         "Bill No": "B001",
         "Customer Name": "Amit Verma",
@@ -105,7 +102,10 @@ export default function SampleDataLoader() {
         "Weight (g)": 10,
         "Rate per g": 5200,
         "Making Charges": 500,
-        "GST (%)": 3
+        "Making Charges Percent": 10,
+        "GST (%)": 3,
+        "Gold Price per 10g": 52000,
+        "Silver Price per 10g": 0
       });
 
       // Refresh data to show new items

@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -67,14 +68,14 @@ export default function Reports() {
             className="w-full sm:w-auto text-sm px-3 py-2"
           >
             <FileText className="w-4 h-4 mr-2" />
-            {t('reports.generateReport')}
+            Generate Report
           </Button>
           <Button 
             variant="outline" 
             onClick={handleViewReport}
             className="w-full sm:w-auto text-sm px-3 py-2"
           >
-            {t('reports.viewReport')}
+            View Report
           </Button>
         </div>
       </div>
@@ -82,35 +83,35 @@ export default function Reports() {
       {/* Report Controls */}
       <Card>
         <CardHeader>
-          <CardTitle className="text-lg">{t('reports.reportSettings')}</CardTitle>
+          <CardTitle className="text-lg">Report Settings</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">{t('reports.reportType')}</label>
+              <label className="text-sm font-medium">Report Type</label>
               <Select value={selectedReport} onValueChange={setSelectedReport}>
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="sales">{t('reports.salesReport')}</SelectItem>
-                  <SelectItem value="inventory">{t('reports.inventoryReport')}</SelectItem>
-                  <SelectItem value="customer">{t('reports.customerReport')}</SelectItem>
-                  <SelectItem value="financial">{t('reports.financialReport')}</SelectItem>
+                  <SelectItem value="sales">Sales Report</SelectItem>
+                  <SelectItem value="inventory">Inventory Report</SelectItem>
+                  <SelectItem value="customer">Customer Report</SelectItem>
+                  <SelectItem value="financial">Financial Report</SelectItem>
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">{t('reports.dateRange')}</label>
+              <label className="text-sm font-medium">Date Range</label>
               <Select value={dateRange} onValueChange={setDateRange}>
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="week">{t('reports.thisWeek')}</SelectItem>
-                  <SelectItem value="month">{t('reports.thisMonth')}</SelectItem>
-                  <SelectItem value="quarter">{t('reports.thisQuarter')}</SelectItem>
-                  <SelectItem value="year">{t('reports.thisYear')}</SelectItem>
+                  <SelectItem value="week">This Week</SelectItem>
+                  <SelectItem value="month">This Month</SelectItem>
+                  <SelectItem value="quarter">This Quarter</SelectItem>
+                  <SelectItem value="year">This Year</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -122,49 +123,49 @@ export default function Reports() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">{t('reports.totalSales')}</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Sales</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">₹{totalSales.toLocaleString()}</div>
             <p className="text-sm text-muted-foreground">
               <TrendingUp className="h-4 w-4 mr-2 inline-block" />
-              12% {t('reports.increaseFromLastMonth')}
+              12% increase from last month
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">{t('reports.totalProducts')}</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Products</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalProducts}</div>
             <p className="text-sm text-muted-foreground">
               <Package className="h-4 w-4 mr-2 inline-block" />
-              {t('reports.allProductsAvailable')}
+              All products available
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">{t('reports.totalCustomers')}</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Customers</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{totalCustomers}</div>
             <p className="text-sm text-muted-foreground">
               <Users className="h-4 w-4 mr-2 inline-block" />
-              {t('reports.activeCustomers')}
+              Active customers
             </p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">{t('reports.newCustomers')}</CardTitle>
+            <CardTitle className="text-sm font-medium text-muted-foreground">New Customers</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{newCustomers}</div>
             <p className="text-sm text-muted-foreground">
               <CalendarDays className="h-4 w-4 mr-2 inline-block" />
-              {t('reports.lastMonth')}
+              Last month
             </p>
           </CardContent>
         </Card>
@@ -174,7 +175,7 @@ export default function Reports() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card>
           <CardHeader>
-            <CardTitle>{t('reports.salesByCategory')}</CardTitle>
+            <CardTitle>Sales by Category</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
@@ -191,7 +192,7 @@ export default function Reports() {
 
         <Card>
           <CardHeader>
-            <CardTitle>{t('reports.categoryDistribution')}</CardTitle>
+            <CardTitle>Category Distribution</CardTitle>
           </CardHeader>
           <CardContent>
             <ResponsiveContainer width="100%" height={300}>
