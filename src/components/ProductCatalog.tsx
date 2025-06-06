@@ -97,8 +97,14 @@ export default function ProductCatalog() {
     return <Badge variant="outline" className="border-green-500 text-green-600">{t('products.stockStatus.inStock')}</Badge>;
   };
 
-  const getProductImage = (category: string) => {
-    switch (category.toLowerCase()) {
+  const getProductImage = (product: Product) => {
+    // Return uploaded image URL if available, otherwise fallback to category-based image
+    if (product["Image URL"] && product["Image URL"].trim() !== "") {
+      return product["Image URL"];
+    }
+    
+    // Fallback to category-based images
+    switch (product.Category.toLowerCase()) {
       case 'rings':
         return "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=300&h=300&fit=crop";
       case 'necklaces':
@@ -213,9 +219,14 @@ export default function ProductCatalog() {
               <CardHeader className="pb-3">
                 <div className="aspect-square w-full mb-3 overflow-hidden rounded-lg bg-gray-100">
                   <img 
-                    src="https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=300&h=300&fit=crop"
+                    src={getProductImage(product)}
                     alt={product["Product Name"]}
                     className="w-full h-full object-cover hover:scale-105 transition-transform duration-200"
+                    onError={(e) => {
+                      // Fallback to default image if custom image fails to load
+                      const target = e.target as HTMLImageElement;
+                      target.src = "https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=300&h=300&fit=crop";
+                    }}
                   />
                 </div>
                 <div className="flex items-start justify-between gap-2">

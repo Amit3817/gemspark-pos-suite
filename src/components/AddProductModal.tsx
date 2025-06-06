@@ -1,5 +1,4 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,7 +13,7 @@ import { useToast } from "@/hooks/use-toast";
 
 export default function AddProductModal() {
   const { t } = useLanguage();
-  const { showAddProductModal, setShowAddProductModal, addProduct, isLoading } = useAppContext();
+  const { showAddProductModal, setShowAddProductModal, addProduct, isLoading, products } = useAppContext();
   const { toast } = useToast();
 
   const [formData, setFormData] = useState({
@@ -32,7 +31,12 @@ export default function AddProductModal() {
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>("");
 
-  const categories = ["Rings", "Necklaces", "Earrings", "Bracelets", "Pendants"];
+  // Get dynamic categories from existing products
+  const defaultCategories = ["Rings", "Necklaces", "Earrings", "Bracelets", "Pendants"];
+  const uniqueProductCategories = [...new Set(products.map(p => p.Category))];
+  const additionalCategories = uniqueProductCategories.filter(cat => !defaultCategories.includes(cat));
+  const allCategories = [...defaultCategories, ...additionalCategories];
+
   const metalTypes = ["Gold", "Silver", "Platinum"];
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -161,7 +165,7 @@ export default function AddProductModal() {
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.map((category) => (
+                  {allCategories.map((category) => (
                     <SelectItem key={category} value={category}>
                       {category}
                     </SelectItem>

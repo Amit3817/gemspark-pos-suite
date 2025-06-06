@@ -1,4 +1,3 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +5,7 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { useAppContext } from "@/contexts/AppContext";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
+import WhatsAppIntegration from "./WhatsAppIntegration";
 
 export default function Settings() {
   const { t } = useLanguage();
@@ -175,6 +175,11 @@ export default function Settings() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {/* WhatsApp Test Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
+        <WhatsAppIntegration />
       </div>
 
       {/* Quick Actions */}
