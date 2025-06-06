@@ -21,7 +21,6 @@ export default function EditProductModal() {
     carat: "",
     weight: "",
     quantity: "",
-    ratePerGram: "",
     metalType: "",
     notes: ""
   });
@@ -38,7 +37,6 @@ export default function EditProductModal() {
         carat: editingProduct["Carat"] || "",
         weight: editingProduct["Weight (g)"]?.toString() || "",
         quantity: editingProduct["Quantity"]?.toString() || "",
-        ratePerGram: editingProduct["Rate per g"]?.toString() || "",
         metalType: editingProduct["Metal Type"] || "",
         notes: editingProduct["Notes"] || ""
       });
@@ -59,7 +57,6 @@ export default function EditProductModal() {
       "Carat": formData.carat,
       "Weight (g)": parseFloat(formData.weight) || 0,
       "Quantity": parseInt(formData.quantity) || 0,
-      "Rate per g": parseFloat(formData.ratePerGram) || 0,
       "Metal Type": formData.metalType,
       "Notes": formData.notes
     };
@@ -76,7 +73,6 @@ export default function EditProductModal() {
       carat: "",
       weight: "",
       quantity: "",
-      ratePerGram: "",
       metalType: "",
       notes: ""
     });
@@ -154,7 +150,7 @@ export default function EditProductModal() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="weight">Weight (g)</Label>
               <Input
@@ -172,16 +168,6 @@ export default function EditProductModal() {
                 type="number"
                 value={formData.quantity}
                 onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-              />
-            </div>
-            <div>
-              <Label htmlFor="ratePerGram">Rate per g</Label>
-              <Input
-                id="ratePerGram"
-                type="number"
-                step="0.01"
-                value={formData.ratePerGram}
-                onChange={(e) => setFormData({ ...formData, ratePerGram: e.target.value })}
               />
             </div>
           </div>
