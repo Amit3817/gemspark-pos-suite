@@ -21,7 +21,6 @@ export default function AddProductModal() {
     carat: "",
     weight: "",
     quantity: "",
-    ratePerGram: "",
     metalType: "",
     notes: ""
   });
@@ -43,7 +42,6 @@ export default function AddProductModal() {
       "Carat": formData.carat,
       "Weight (g)": parseFloat(formData.weight) || 0,
       "Quantity": parseInt(formData.quantity) || 0,
-      "Rate per g": parseFloat(formData.ratePerGram) || 0,
       "Metal Type": formData.metalType,
       "Notes": formData.notes
     };
@@ -61,7 +59,6 @@ export default function AddProductModal() {
       carat: "",
       weight: "",
       quantity: "",
-      ratePerGram: "",
       metalType: "",
       notes: ""
     });
@@ -139,7 +136,7 @@ export default function AddProductModal() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="weight">Weight (g)</Label>
               <Input
@@ -157,16 +154,6 @@ export default function AddProductModal() {
                 type="number"
                 value={formData.quantity}
                 onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
-              />
-            </div>
-            <div>
-              <Label htmlFor="ratePerGram">Rate per g</Label>
-              <Input
-                id="ratePerGram"
-                type="number"
-                step="0.01"
-                value={formData.ratePerGram}
-                onChange={(e) => setFormData({ ...formData, ratePerGram: e.target.value })}
               />
             </div>
           </div>

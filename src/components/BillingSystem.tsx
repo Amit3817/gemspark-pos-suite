@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -100,7 +100,7 @@ export default function BillingSystem() {
     if (cartItems.length > 0) {
       updateCartRates();
     }
-  }, [goldPrice, silverPrice]);
+  }, [goldPrice, silverPrice, cartItems]);
 
   const removeFromCart = (productId: string) => {
     setCartItems(cartItems.filter(item => item["Product ID"] !== productId));
