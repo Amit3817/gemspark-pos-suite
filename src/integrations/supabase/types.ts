@@ -156,6 +156,7 @@ export type Database = {
           category: string
           created_at: string
           id: string
+          image_url: string | null
           metal_type: string | null
           notes: string | null
           product_id: string
@@ -169,6 +170,7 @@ export type Database = {
           category: string
           created_at?: string
           id?: string
+          image_url?: string | null
           metal_type?: string | null
           notes?: string | null
           product_id: string
@@ -182,6 +184,7 @@ export type Database = {
           category?: string
           created_at?: string
           id?: string
+          image_url?: string | null
           metal_type?: string | null
           notes?: string | null
           product_id?: string

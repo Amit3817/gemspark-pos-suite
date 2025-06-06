@@ -9,10 +9,13 @@ import { Textarea } from "@/components/ui/textarea";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useAppContext } from "@/contexts/AppContext";
 import { Product } from "@/services/supabaseApi";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 export default function AddProductModal() {
   const { t } = useLanguage();
   const { showAddProductModal, setShowAddProductModal, addProduct, isLoading } = useAppContext();
+  const { toast } = useToast();
 
   const [formData, setFormData] = useState({
     productId: "",
@@ -22,17 +25,82 @@ export default function AddProductModal() {
     weight: "",
     quantity: "",
     metalType: "",
-    notes: ""
+    notes: "",
+    imageUrl: ""
   });
+
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>("");
 
   const categories = ["Rings", "Necklaces", "Earrings", "Bracelets", "Pendants"];
   const metalTypes = ["Gold", "Silver", "Platinum"];
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setImageFile(file);
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setImagePreview(event.target?.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadImage = async (file: File, productId: string): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${productId}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('product-images')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        toast({
+          title: "Error",
+          description: "Failed to upload image",
+          variant: "destructive",
+        });
+        return null;
+      }
+
+      const { data } = supabase.storage
+        .from('product-images')
+        .getPublicUrl(filePath);
+
+      return data.publicUrl;
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      return null;
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.productId || !formData.productName || !formData.category) {
+      toast({
+        title: "Error",
+        description: "Please fill in all required fields",
+        variant: "destructive",
+      });
       return;
+    }
+
+    let imageUrl = "";
+    
+    // Upload image if selected
+    if (imageFile) {
+      const uploadedUrl = await uploadImage(imageFile, formData.productId);
+      if (uploadedUrl) {
+        imageUrl = uploadedUrl;
+      }
     }
 
     const product: Product = {
@@ -43,7 +111,8 @@ export default function AddProductModal() {
       "Weight (g)": parseFloat(formData.weight) || 0,
       "Quantity": parseInt(formData.quantity) || 0,
       "Metal Type": formData.metalType,
-      "Notes": formData.notes
+      "Notes": formData.notes,
+      "Image URL": imageUrl
     };
 
     await addProduct(product);
@@ -60,13 +129,16 @@ export default function AddProductModal() {
       weight: "",
       quantity: "",
       metalType: "",
-      notes: ""
+      notes: "",
+      imageUrl: ""
     });
+    setImageFile(null);
+    setImagePreview("");
   };
 
   return (
     <Dialog open={showAddProductModal} onOpenChange={setShowAddProductModal}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t('products.addNew')}</DialogTitle>
         </DialogHeader>
@@ -107,6 +179,26 @@ export default function AddProductModal() {
               onChange={(e) => setFormData({ ...formData, productName: e.target.value })}
               required
             />
+          </div>
+
+          <div>
+            <Label htmlFor="image">Product Image</Label>
+            <Input
+              id="image"
+              type="file"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="cursor-pointer"
+            />
+            {imagePreview && (
+              <div className="mt-2">
+                <img 
+                  src={imagePreview} 
+                  alt="Preview" 
+                  className="w-20 h-20 object-cover rounded border"
+                />
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-2 gap-4">
