@@ -1,4 +1,3 @@
-
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { supabaseApi } from "@/services/supabaseApi";
@@ -15,7 +14,7 @@ export default function SampleDataLoader() {
         description: "Adding sample products, customers, and bills...",
       });
 
-      // Sample products (removed rate_per_g)
+      // Sample products (added "Image URL" property)
       const sampleProducts = [
         {
           "Product ID": "P001",
@@ -25,7 +24,8 @@ export default function SampleDataLoader() {
           "Weight (g)": 10,
           "Quantity": 5,
           "Metal Type": "Gold",
-          "Notes": "Classic Design"
+          "Notes": "Classic Design",
+          "Image URL": ""
         },
         {
           "Product ID": "P002",
@@ -35,7 +35,8 @@ export default function SampleDataLoader() {
           "Weight (g)": 25,
           "Quantity": 3,
           "Metal Type": "Gold",
-          "Notes": "Premium Collection"
+          "Notes": "Premium Collection",
+          "Image URL": ""
         },
         {
           "Product ID": "P003",
@@ -45,7 +46,8 @@ export default function SampleDataLoader() {
           "Weight (g)": 8,
           "Quantity": 10,
           "Metal Type": "Silver",
-          "Notes": "Handcrafted"
+          "Notes": "Handcrafted",
+          "Image URL": ""
         }
       ];
 
