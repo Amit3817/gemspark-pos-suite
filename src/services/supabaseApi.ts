@@ -10,6 +10,7 @@ export interface Product {
   "Quantity": number;
   "Metal Type": string;
   "Notes": string;
+  "Image URL": string;
 }
 
 export interface Bill {
@@ -59,7 +60,8 @@ const transformProduct = (row: any): Product => ({
   "Weight (g)": parseFloat(row.weight_g) || 0,
   "Quantity": row.quantity || 0,
   "Metal Type": row.metal_type || '',
-  "Notes": row.notes || ''
+  "Notes": row.notes || '',
+  "Image URL": row.image_url || ''
 });
 
 const transformCustomer = (row: any): Customer => ({
@@ -129,7 +131,8 @@ export const addProduct = async (product: Product) => {
       weight_g: product["Weight (g)"],
       quantity: product["Quantity"],
       metal_type: product["Metal Type"],
-      notes: product["Notes"]
+      notes: product["Notes"],
+      image_url: product["Image URL"]
     });
 
   if (error) {
@@ -151,7 +154,8 @@ export const updateProduct = async (product: Product) => {
       weight_g: product["Weight (g)"],
       quantity: product["Quantity"],
       metal_type: product["Metal Type"],
-      notes: product["Notes"]
+      notes: product["Notes"],
+      image_url: product["Image URL"]
     })
     .eq('product_id', product["Product ID"]);
 
