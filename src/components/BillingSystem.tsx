@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -31,8 +30,8 @@ export default function BillingSystem() {
   });
   const [searchTerm, setSearchTerm] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cash");
-  const [goldPrice, setGoldPrice] = useState<number>(0);
-  const [silverPrice, setSilverPrice] = useState<number>(0);
+  const [goldPrice, setGoldPrice] = useState<string>("");
+  const [silverPrice, setSilverPrice] = useState<string>("");
   const [makingChargesPercent, setMakingChargesPercent] = useState<number>(10);
   const [completedBill, setCompletedBill] = useState<Bill | null>(null);
   const [showWhatsApp, setShowWhatsApp] = useState(false);
@@ -42,6 +41,35 @@ export default function BillingSystem() {
     queryFn: supabaseApi.getAllProducts,
   });
 
+  // Load saved data from localStorage on component mount
+  useEffect(() => {
+    const savedData = localStorage.getItem('billingSystemData');
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        setCartItems(parsed.cartItems || []);
+        setCustomerInfo(parsed.customerInfo || { name: "", phone: "", email: "" });
+        setGoldPrice(parsed.goldPrice || "");
+        setSilverPrice(parsed.silverPrice || "");
+        setMakingChargesPercent(parsed.makingChargesPercent || 10);
+      } catch (error) {
+        console.error('Error loading saved billing data:', error);
+      }
+    }
+  }, []);
+
+  // Save data to localStorage whenever state changes
+  useEffect(() => {
+    const dataToSave = {
+      cartItems,
+      customerInfo,
+      goldPrice,
+      silverPrice,
+      makingChargesPercent
+    };
+    localStorage.setItem('billingSystemData', JSON.stringify(dataToSave));
+  }, [cartItems, customerInfo, goldPrice, silverPrice, makingChargesPercent]);
+
   const filteredProducts = products.filter(product =>
     product["Product Name"].toLowerCase().includes(searchTerm.toLowerCase()) ||
     product.Category.toLowerCase().includes(searchTerm.toLowerCase())
@@ -50,11 +78,13 @@ export default function BillingSystem() {
   const calculateRate = (product: Product): number => {
     const metalType = product["Metal Type"]?.toLowerCase();
     const weight = product["Weight (g)"];
+    const goldPriceNum = parseFloat(goldPrice) || 0;
+    const silverPriceNum = parseFloat(silverPrice) || 0;
     
-    if (metalType?.includes("gold") && goldPrice > 0) {
-      return (goldPrice / 10) * weight;
-    } else if (metalType?.includes("silver") && silverPrice > 0) {
-      return (silverPrice / 10) * weight;
+    if (metalType?.includes("gold") && goldPriceNum > 0) {
+      return (goldPriceNum / 10) * weight;
+    } else if (metalType?.includes("silver") && silverPriceNum > 0) {
+      return (silverPriceNum / 10) * weight;
     }
     return 0;
   };
@@ -118,6 +148,8 @@ export default function BillingSystem() {
     }
   };
 
+  const goldPriceNum = parseFloat(goldPrice) || 0;
+  const silverPriceNum = parseFloat(silverPrice) || 0;
   const hasGoldItems = cartItems.some(item => item["Metal Type"]?.toLowerCase().includes("gold"));
   const hasSilverItems = cartItems.some(item => item["Metal Type"]?.toLowerCase().includes("silver"));
 
@@ -149,7 +181,7 @@ export default function BillingSystem() {
       return;
     }
 
-    if (hasGoldItems && goldPrice <= 0) {
+    if (hasGoldItems && goldPriceNum <= 0) {
       toast({
         title: "Error",
         description: "Please enter gold price for gold items",
@@ -158,7 +190,7 @@ export default function BillingSystem() {
       return;
     }
 
-    if (hasSilverItems && silverPrice <= 0) {
+    if (hasSilverItems && silverPriceNum <= 0) {
       toast({
         title: "Error",
         description: "Please enter silver price for silver items",
@@ -198,8 +230,8 @@ export default function BillingSystem() {
           "Making Charges": makingCharges,
           "Making Charges Percent": makingChargesPercent,
           "GST (%)": gstPercent,
-          "Gold Price per 10g": hasGoldItems ? goldPrice : 0,
-          "Silver Price per 10g": hasSilverItems ? silverPrice : 0,
+          "Gold Price per 10g": hasGoldItems ? goldPriceNum : 0,
+          "Silver Price per 10g": hasSilverItems ? silverPriceNum : 0,
         };
 
         await addBill(billData);
@@ -220,11 +252,14 @@ export default function BillingSystem() {
       // Refresh data to update all lists
       await refreshData();
       
-      // Clear cart and customer info
+      // Clear cart and customer info and reset form
       setCartItems([]);
       setCustomerInfo({ name: "", phone: "", email: "" });
-      setGoldPrice(0);
-      setSilverPrice(0);
+      setGoldPrice("");
+      setSilverPrice("");
+      
+      // Clear localStorage
+      localStorage.removeItem('billingSystemData');
       
       toast({
         title: "Sale Completed",
@@ -320,7 +355,7 @@ export default function BillingSystem() {
                   id="gold-price"
                   type="number"
                   value={goldPrice}
-                  onChange={(e) => setGoldPrice(Number(e.target.value))}
+                  onChange={(e) => setGoldPrice(e.target.value)}
                   placeholder="Enter gold price per 10g"
                 />
               </div>
@@ -330,13 +365,14 @@ export default function BillingSystem() {
                   id="silver-price"
                   type="number"
                   value={silverPrice}
-                  onChange={(e) => setSilverPrice(Number(e.target.value))}
+                  onChange={(e) => setSilverPrice(e.target.value)}
                   placeholder="Enter silver price per 10g"
                 />
               </div>
             </CardContent>
           </Card>
 
+          {/* ... keep existing code (Product Selection Card) */}
           <Card>
             <CardHeader>
               <CardTitle>{t('billing.addProducts')}</CardTitle>
@@ -380,7 +416,7 @@ export default function BillingSystem() {
             </CardContent>
           </Card>
 
-          {/* Cart Items */}
+          {/* ... keep existing code (Cart Items Card) */}
           <Card>
             <CardHeader>
               <CardTitle>{t('billing.cartItems')}</CardTitle>
@@ -438,7 +474,7 @@ export default function BillingSystem() {
 
         {/* Billing Summary */}
         <div className="space-y-6">
-          {/* Customer Info */}
+          {/* ... keep existing code (Customer Info, Making Charges, Bill Summary Cards) */}
           <Card>
             <CardHeader>
               <CardTitle>{t('billing.customerInformation')}</CardTitle>
@@ -475,7 +511,6 @@ export default function BillingSystem() {
             </CardContent>
           </Card>
 
-          {/* Making Charges */}
           <Card>
             <CardHeader>
               <CardTitle>Additional Charges</CardTitle>
@@ -494,7 +529,6 @@ export default function BillingSystem() {
             </CardContent>
           </Card>
 
-          {/* Bill Summary */}
           <Card>
             <CardHeader>
               <CardTitle>{t('billing.billSummary')}</CardTitle>
@@ -566,18 +600,19 @@ export default function BillingSystem() {
           {/* WhatsApp Integration */}
           {showWhatsApp && completedBill && (
             <Card>
-              <CardContent className="p-4">
+              <CardHeader>
+                <div className="flex justify-between items-center">
+                  <CardTitle>Send Invoice via WhatsApp</CardTitle>
+                  <Button variant="outline" onClick={() => setShowWhatsApp(false)}>
+                    Close
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
                 <WhatsAppIntegration 
                   bill={completedBill}
                   customerPhone={completedBill["Phone Number"]}
                 />
-                <Button 
-                  variant="outline" 
-                  className="w-full mt-4"
-                  onClick={() => setShowWhatsApp(false)}
-                >
-                  Close WhatsApp
-                </Button>
               </CardContent>
             </Card>
           )}
