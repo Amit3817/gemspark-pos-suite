@@ -10,7 +10,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabaseApi, Product, Bill } from "@/services/supabaseApi";
 import { useAppContext } from "@/contexts/AppContext";
 import { useToast } from "@/hooks/use-toast";
-import WhatsAppIntegration from "./WhatsAppIntegration";
 
 interface CartItem extends Product {
   cartQuantity: number;
@@ -34,12 +33,6 @@ export default function BillingSystem() {
   const [silverPrice, setSilverPrice] = useState<string>("");
   const [makingChargesPercent, setMakingChargesPercent] = useState<number>(10);
   const [completedBill, setCompletedBill] = useState<Bill | null>(null);
-  const [showWhatsApp, setShowWhatsApp] = useState(false);
-
-  const { data: products = [] } = useQuery({
-    queryKey: ['products'],
-    queryFn: supabaseApi.getAllProducts,
-  });
 
   // Load saved data from localStorage on component mount
   useEffect(() => {
@@ -69,6 +62,11 @@ export default function BillingSystem() {
     };
     localStorage.setItem('billingSystemData', JSON.stringify(dataToSave));
   }, [cartItems, customerInfo, goldPrice, silverPrice, makingChargesPercent]);
+
+  const { data: products = [] } = useQuery({
+    queryKey: ['products'],
+    queryFn: supabaseApi.getAllProducts,
+  });
 
   const filteredProducts = products.filter(product =>
     product["Product Name"].toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -273,6 +271,57 @@ export default function BillingSystem() {
         variant: "destructive",
       });
     }
+  };
+
+  const handleSendWhatsApp = () => {
+    if (!completedBill) {
+      toast({
+        title: "No Bill to Send",
+        description: "Please complete a sale first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Create detailed WhatsApp message
+    const messageToSend = `*GemSpark Jewelry - Invoice*
+
+📧 *Invoice No:* ${completedBill["Bill No"]}
+📅 *Date:* ${new Date(completedBill["Date"]).toLocaleDateString()}
+
+👤 *Customer:* ${completedBill["Customer Name"]}
+📱 *Phone:* ${completedBill["Phone Number"]}
+
+💎 *Product Details:*
+• Product: ${completedBill["Product Name"]}
+• Metal: ${completedBill["Metal Type"]}
+• Weight: ${completedBill["Weight (g)"]}g
+• Rate: ₹${completedBill["Rate per g"]}/g
+
+💰 *Amount Details:*
+• Making Charges: ₹${completedBill["Making Charges"]}
+• GST: ${completedBill["GST (%)"]}%
+• *Total: ₹${completedBill["Total Amount"]}*
+
+Thank you for choosing GemSpark Jewelry! ✨
+
+📞 Contact: +91 98765 43210
+📧 Email: info@gemspark.com`;
+
+    // Format phone number
+    let formattedPhone = completedBill["Phone Number"].replace(/\D/g, '');
+    if (!formattedPhone.startsWith('91')) {
+      formattedPhone = '91' + formattedPhone;
+    }
+
+    // Create WhatsApp URL and open it
+    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(messageToSend)}`;
+    window.open(whatsappUrl, '_blank');
+
+    toast({
+      title: "WhatsApp Opened",
+      description: "WhatsApp opened with invoice details ready to send.",
+    });
   };
 
   const handlePrintReceipt = () => {
@@ -580,7 +629,7 @@ export default function BillingSystem() {
                 <Button 
                   variant="outline" 
                   className="w-full"
-                  onClick={() => setShowWhatsApp(true)}
+                  onClick={handleSendWhatsApp}
                   disabled={!completedBill}
                 >
                   {t('billing.sendViaWhatsApp')}
@@ -596,26 +645,6 @@ export default function BillingSystem() {
               </div>
             </CardContent>
           </Card>
-
-          {/* WhatsApp Integration */}
-          {showWhatsApp && completedBill && (
-            <Card>
-              <CardHeader>
-                <div className="flex justify-between items-center">
-                  <CardTitle>Send Invoice via WhatsApp</CardTitle>
-                  <Button variant="outline" onClick={() => setShowWhatsApp(false)}>
-                    Close
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <WhatsAppIntegration 
-                  bill={completedBill}
-                  customerPhone={completedBill["Phone Number"]}
-                />
-              </CardContent>
-            </Card>
-          )}
         </div>
       </div>
     </div>
