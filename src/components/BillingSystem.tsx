@@ -160,6 +160,190 @@ export default function BillingSystem() {
   const gstAmount = (subtotal + makingCharges) * (gstPercent / 100);
   const total = subtotal + makingCharges + gstAmount;
 
+  const generateBillPDF = async (billData: Bill): Promise<string> => {
+    // Create HTML content for PDF
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="utf-8">
+          <title>Invoice - ${billData["Bill No"]}</title>
+          <style>
+            body { 
+              font-family: Arial, sans-serif; 
+              margin: 0; 
+              padding: 20px; 
+              background: white;
+              line-height: 1.6;
+            }
+            .header { 
+              text-align: center; 
+              margin-bottom: 30px; 
+              border-bottom: 2px solid #333;
+              padding-bottom: 20px;
+            }
+            .company-name { 
+              font-size: 28px; 
+              font-weight: bold; 
+              color: #333; 
+              margin-bottom: 5px;
+            }
+            .invoice-title { 
+              font-size: 20px; 
+              color: #666; 
+            }
+            .details-section { 
+              margin: 20px 0; 
+              display: flex; 
+              justify-content: space-between;
+            }
+            .details-left, .details-right { 
+              width: 45%; 
+            }
+            .detail-row { 
+              margin: 8px 0; 
+              display: flex; 
+              justify-content: space-between;
+            }
+            .label { 
+              font-weight: bold; 
+              color: #333; 
+            }
+            .value { 
+              color: #666; 
+            }
+            .total-section { 
+              margin-top: 30px; 
+              border-top: 2px solid #333; 
+              padding-top: 15px;
+            }
+            .total-row { 
+              display: flex; 
+              justify-content: space-between; 
+              margin: 5px 0; 
+              font-size: 18px; 
+              font-weight: bold;
+            }
+            .footer { 
+              text-align: center; 
+              margin-top: 30px; 
+              font-size: 12px; 
+              color: #666;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <div class="company-name">GemSpark Jewelry</div>
+            <div class="invoice-title">INVOICE</div>
+          </div>
+          
+          <div class="details-section">
+            <div class="details-left">
+              <div class="detail-row">
+                <span class="label">Invoice No:</span>
+                <span class="value">${billData["Bill No"]}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Date:</span>
+                <span class="value">${new Date(billData["Date"]).toLocaleDateString()}</span>
+              </div>
+            </div>
+            <div class="details-right">
+              <div class="detail-row">
+                <span class="label">Customer:</span>
+                <span class="value">${billData["Customer Name"]}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Phone:</span>
+                <span class="value">${billData["Phone Number"]}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="details-section">
+            <div class="details-left">
+              <div class="detail-row">
+                <span class="label">Product:</span>
+                <span class="value">${billData["Product Name"]}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Metal Type:</span>
+                <span class="value">${billData["Metal Type"]}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Carat:</span>
+                <span class="value">${billData["Carat"]}</span>
+              </div>
+            </div>
+            <div class="details-right">
+              <div class="detail-row">
+                <span class="label">Weight:</span>
+                <span class="value">${billData["Weight (g)"]}g</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Rate per gram:</span>
+                <span class="value">₹${billData["Rate per g"]}</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="total-section">
+            <div class="detail-row">
+              <span class="label">Making Charges:</span>
+              <span class="value">₹${billData["Making Charges"]}</span>
+            </div>
+            <div class="detail-row">
+              <span class="label">GST (${billData["GST (%)"]}%):</span>
+              <span class="value">₹${((billData["Weight (g)"] * billData["Rate per g"] + billData["Making Charges"]) * billData["GST (%)"] / 100).toFixed(2)}</span>
+            </div>
+            <div class="total-row">
+              <span>TOTAL AMOUNT:</span>
+              <span>₹${billData["Total Amount"]}</span>
+            </div>
+          </div>
+
+          <div class="footer">
+            <p>Thank you for your business!</p>
+            <p>GemSpark Jewelry • Phone: +91 98765 43210 • Email: info@gemspark.com</p>
+          </div>
+        </body>
+      </html>
+    `;
+
+    // Create a temporary window to generate PDF
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    if (!printWindow) {
+      throw new Error('Unable to open print window');
+    }
+
+    return new Promise((resolve, reject) => {
+      printWindow.document.write(htmlContent);
+      printWindow.document.close();
+      
+      // Wait for content to load then convert to PDF
+      printWindow.onload = () => {
+        setTimeout(() => {
+          try {
+            // Use browser's print to PDF functionality
+            printWindow.print();
+            
+            // Create a data URL representation
+            const dataUrl = `data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`;
+            
+            // Close the print window
+            printWindow.close();
+            
+            resolve(dataUrl);
+          } catch (error) {
+            printWindow.close();
+            reject(error);
+          }
+        }, 1000);
+      };
+    });
+  };
+
   const handleCompleteSale = async () => {
     if (cartItems.length === 0) {
       toast({
@@ -273,7 +457,7 @@ export default function BillingSystem() {
     }
   };
 
-  const handleSendWhatsApp = () => {
+  const handleSendWhatsApp = async () => {
     if (!completedBill) {
       toast({
         title: "No Bill to Send",
@@ -283,8 +467,17 @@ export default function BillingSystem() {
       return;
     }
 
-    // Create detailed WhatsApp message
-    const messageToSend = `*GemSpark Jewelry - Invoice*
+    try {
+      toast({
+        title: "Generating Invoice",
+        description: "Creating PDF invoice...",
+      });
+
+      // Generate PDF
+      const pdfDataUrl = await generateBillPDF(completedBill);
+      
+      // Create message with PDF attachment reference
+      const messageToSend = `*GemSpark Jewelry - Invoice*
 
 📧 *Invoice No:* ${completedBill["Bill No"]}
 📅 *Date:* ${new Date(completedBill["Date"]).toLocaleDateString()}
@@ -303,25 +496,54 @@ export default function BillingSystem() {
 • GST: ${completedBill["GST (%)"]}%
 • *Total: ₹${completedBill["Total Amount"]}*
 
+📄 *PDF Invoice attached separately*
+
 Thank you for choosing GemSpark Jewelry! ✨
 
 📞 Contact: +91 98765 43210
 📧 Email: info@gemspark.com`;
 
-    // Format phone number
-    let formattedPhone = completedBill["Phone Number"].replace(/\D/g, '');
-    if (!formattedPhone.startsWith('91')) {
-      formattedPhone = '91' + formattedPhone;
+      // Format phone number
+      let formattedPhone = completedBill["Phone Number"].replace(/\D/g, '');
+      if (!formattedPhone.startsWith('91')) {
+        formattedPhone = '91' + formattedPhone;
+      }
+
+      // Create WhatsApp URL and open it
+      const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(messageToSend)}`;
+      window.open(whatsappUrl, '_blank');
+
+      // Also create a downloadable PDF link
+      const blob = new Blob([`
+        <html>
+          <head><title>Invoice - ${completedBill["Bill No"]}</title></head>
+          <body>
+            <p>Please save this invoice and share it via WhatsApp:</p>
+            <iframe src="${pdfDataUrl}" width="100%" height="600px"></iframe>
+          </body>
+        </html>
+      `], { type: 'text/html' });
+      
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Invoice-${completedBill["Bill No"]}.html`;
+      link.click();
+      URL.revokeObjectURL(url);
+
+      toast({
+        title: "Invoice Ready",
+        description: "WhatsApp opened with message. Invoice file downloaded - please attach it to your WhatsApp message.",
+      });
+
+    } catch (error) {
+      console.error('Error generating invoice:', error);
+      toast({
+        title: "Error",
+        description: "Failed to generate invoice",
+        variant: "destructive",
+      });
     }
-
-    // Create WhatsApp URL and open it
-    const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(messageToSend)}`;
-    window.open(whatsappUrl, '_blank');
-
-    toast({
-      title: "WhatsApp Opened",
-      description: "WhatsApp opened with invoice details ready to send.",
-    });
   };
 
   const handlePrintReceipt = () => {
