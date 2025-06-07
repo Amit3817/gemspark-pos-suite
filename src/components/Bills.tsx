@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useState } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Bill } from "@/services/googleSheetsApi";
+import { Bill } from "@/services/supabaseApi";
 import { useToast } from "@/hooks/use-toast";
 import { useAppContext } from "@/contexts/AppContext";
 import WhatsAppIntegration from "./WhatsAppIntegration";
@@ -17,7 +17,7 @@ export default function Bills() {
   const [showWhatsApp, setShowWhatsApp] = useState(false);
   const { t } = useLanguage();
   const { toast } = useToast();
-  const { bills, isLoadingBills, refreshData, printBill, deleteBill } = useAppContext();
+  const { bills, isLoadingBills, refreshData, deleteBill } = useAppContext();
 
   console.log('Bills component - data:', bills);
 
@@ -82,7 +82,15 @@ export default function Bills() {
   };
 
   const handleSendWhatsApp = (bill: Bill) => {
-    setSelectedBill(bill);
+    // Create a complete Bill object with all required properties
+    const completeBill: Bill = {
+      ...bill,
+      "Making Charges Percent": bill["Making Charges Percent"] || 10,
+      "Gold Price per 10g": bill["Gold Price per 10g"] || 0,
+      "Silver Price per 10g": bill["Silver Price per 10g"] || 0
+    };
+    
+    setSelectedBill(completeBill);
     setShowWhatsApp(true);
   };
 

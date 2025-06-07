@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Separator } from "@/components/ui/separator";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useQuery } from "@tanstack/react-query";
-import { supabaseApi, Product } from "@/services/supabaseApi";
+import { supabaseApi, Product, Bill } from "@/services/supabaseApi";
 import { useAppContext } from "@/contexts/AppContext";
 import { useToast } from "@/hooks/use-toast";
 import WhatsAppIntegration from "./WhatsAppIntegration";
@@ -20,7 +20,7 @@ interface CartItem extends Product {
 
 export default function BillingSystem() {
   const { t } = useLanguage();
-  const { addBill, addCustomer } = useAppContext();
+  const { addBill, addCustomer, refreshData } = useAppContext();
   const { toast } = useToast();
 
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -34,7 +34,7 @@ export default function BillingSystem() {
   const [goldPrice, setGoldPrice] = useState<number>(0);
   const [silverPrice, setSilverPrice] = useState<number>(0);
   const [makingChargesPercent, setMakingChargesPercent] = useState<number>(10);
-  const [completedBill, setCompletedBill] = useState<any>(null);
+  const [completedBill, setCompletedBill] = useState<Bill | null>(null);
   const [showWhatsApp, setShowWhatsApp] = useState(false);
 
   const { data: products = [] } = useQuery({
@@ -185,7 +185,7 @@ export default function BillingSystem() {
       for (const item of cartItems) {
         const billNo = `INV-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
         
-        const bill = {
+        const billData = {
           "Bill No": billNo,
           "Customer Name": customerInfo.name,
           "Phone Number": customerInfo.phone,
@@ -202,19 +202,23 @@ export default function BillingSystem() {
           "Silver Price per 10g": hasSilverItems ? silverPrice : 0,
         };
 
-        await addBill(bill);
+        await addBill(billData);
         
         if (!firstBill) {
+          // Create complete bill object with all required properties
           firstBill = {
-            ...bill,
+            ...billData,
             "Date": new Date().toISOString(),
             "Total Amount": total
-          };
+          } as Bill;
         }
       }
 
-      // Set completed bill for WhatsApp integration
+      // Set completed bill for WhatsApp integration and printing
       setCompletedBill(firstBill);
+      
+      // Refresh data to update all lists
+      await refreshData();
       
       // Clear cart and customer info
       setCartItems([]);
@@ -224,9 +228,10 @@ export default function BillingSystem() {
       
       toast({
         title: "Sale Completed",
-        description: "Bills created successfully",
+        description: "Bills created successfully. You can now print or send via WhatsApp.",
       });
     } catch (error) {
+      console.error('Error completing sale:', error);
       toast({
         title: "Error",
         description: "Failed to complete sale",
