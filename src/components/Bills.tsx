@@ -1,3 +1,4 @@
+
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,12 +9,15 @@ import { useLanguage } from "@/contexts/LanguageContext";
 import { Bill } from "@/services/googleSheetsApi";
 import { useToast } from "@/hooks/use-toast";
 import { useAppContext } from "@/contexts/AppContext";
+import WhatsAppIntegration from "./WhatsAppIntegration";
 
 export default function Bills() {
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
+  const [showWhatsApp, setShowWhatsApp] = useState(false);
   const { t } = useLanguage();
   const { toast } = useToast();
-  const { bills, isLoadingBills, refreshData, printBill, sendWhatsApp, deleteBill } = useAppContext();
+  const { bills, isLoadingBills, refreshData, printBill, deleteBill } = useAppContext();
 
   console.log('Bills component - data:', bills);
 
@@ -32,12 +36,54 @@ export default function Bills() {
     console.log('Viewing bill details:', bill);
   };
 
-  const handlePrintBill = (billNo: string) => {
-    printBill(billNo);
+  const handlePrintBill = (bill: Bill) => {
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Receipt - ${bill["Bill No"]}</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 20px; }
+              .header { text-align: center; margin-bottom: 20px; }
+              .details { margin: 10px 0; }
+              .total { font-weight: bold; font-size: 18px; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h2>GemSpark Jewelry</h2>
+              <p>Receipt</p>
+            </div>
+            <div class="details">
+              <p><strong>Bill No:</strong> ${bill["Bill No"]}</p>
+              <p><strong>Date:</strong> ${new Date(bill["Date"]).toLocaleDateString()}</p>
+              <p><strong>Customer:</strong> ${bill["Customer Name"]}</p>
+              <p><strong>Phone:</strong> ${bill["Phone Number"]}</p>
+              <p><strong>Product:</strong> ${bill["Product Name"]}</p>
+              <p><strong>Metal Type:</strong> ${bill["Metal Type"]}</p>
+              <p><strong>Weight:</strong> ${bill["Weight (g)"]}g</p>
+              <p><strong>Rate per gram:</strong> ₹${bill["Rate per g"]}</p>
+              <p><strong>Making Charges:</strong> ₹${bill["Making Charges"]}</p>
+              <p><strong>GST:</strong> ${bill["GST (%)"]}%</p>
+              <p class="total"><strong>Total Amount:</strong> ₹${bill["Total Amount"]}</p>
+            </div>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
+    }
+    
+    toast({
+      title: "Receipt Printed",
+      description: "Receipt has been sent to printer",
+    });
   };
 
   const handleSendWhatsApp = (bill: Bill) => {
-    sendWhatsApp(bill["Bill No"], bill["Phone Number"].toString());
+    setSelectedBill(bill);
+    setShowWhatsApp(true);
   };
 
   const handleDeleteBill = async (billNo: string) => {
@@ -122,6 +168,26 @@ export default function Bills() {
         />
       </div>
 
+      {/* WhatsApp Integration */}
+      {showWhatsApp && selectedBill && (
+        <Card>
+          <CardHeader>
+            <div className="flex justify-between items-center">
+              <CardTitle>Send Bill via WhatsApp</CardTitle>
+              <Button variant="outline" onClick={() => setShowWhatsApp(false)}>
+                Close
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <WhatsAppIntegration 
+              bill={selectedBill}
+              customerPhone={selectedBill["Phone Number"].toString()}
+            />
+          </CardContent>
+        </Card>
+      )}
+
       {/* Bills Table */}
       <Card>
         <CardHeader>
@@ -173,7 +239,7 @@ export default function Bills() {
                           size="sm" 
                           variant="outline" 
                           className="text-xs hidden sm:inline-flex"
-                          onClick={() => handlePrintBill(bill["Bill No"])}
+                          onClick={() => handlePrintBill(bill)}
                         >
                           {t('bills.printBill')}
                         </Button>

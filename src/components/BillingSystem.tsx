@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,15 +11,16 @@ import { useQuery } from "@tanstack/react-query";
 import { supabaseApi, Product } from "@/services/supabaseApi";
 import { useAppContext } from "@/contexts/AppContext";
 import { useToast } from "@/hooks/use-toast";
+import WhatsAppIntegration from "./WhatsAppIntegration";
 
 interface CartItem extends Product {
   cartQuantity: number;
-  calculatedRate: number; // Rate calculated based on metal type and current prices
+  calculatedRate: number;
 }
 
 export default function BillingSystem() {
   const { t } = useLanguage();
-  const { addBill } = useAppContext();
+  const { addBill, addCustomer } = useAppContext();
   const { toast } = useToast();
 
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -32,8 +34,9 @@ export default function BillingSystem() {
   const [goldPrice, setGoldPrice] = useState<number>(0);
   const [silverPrice, setSilverPrice] = useState<number>(0);
   const [makingChargesPercent, setMakingChargesPercent] = useState<number>(10);
+  const [completedBill, setCompletedBill] = useState<any>(null);
+  const [showWhatsApp, setShowWhatsApp] = useState(false);
 
-  // Fetch products for selection
   const { data: products = [] } = useQuery({
     queryKey: ['products'],
     queryFn: supabaseApi.getAllProducts,
@@ -44,15 +47,14 @@ export default function BillingSystem() {
     product.Category.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Calculate rate based on metal type and weight
   const calculateRate = (product: Product): number => {
     const metalType = product["Metal Type"]?.toLowerCase();
     const weight = product["Weight (g)"];
     
     if (metalType?.includes("gold") && goldPrice > 0) {
-      return (goldPrice / 10) * weight; // Convert per 10g to per gram, then multiply by weight
+      return (goldPrice / 10) * weight;
     } else if (metalType?.includes("silver") && silverPrice > 0) {
-      return (silverPrice / 10) * weight; // Convert per 10g to per gram, then multiply by weight
+      return (silverPrice / 10) * weight;
     }
     return 0;
   };
@@ -87,7 +89,6 @@ export default function BillingSystem() {
     });
   };
 
-  // Update cart rates when prices change
   const updateCartRates = () => {
     setCartItems(cartItems.map(item => ({
       ...item,
@@ -95,12 +96,11 @@ export default function BillingSystem() {
     })));
   };
 
-  // Update rates when gold or silver price changes
   React.useEffect(() => {
     if (cartItems.length > 0) {
       updateCartRates();
     }
-  }, [goldPrice, silverPrice, cartItems]);
+  }, [goldPrice, silverPrice]);
 
   const removeFromCart = (productId: string) => {
     setCartItems(cartItems.filter(item => item["Product ID"] !== productId));
@@ -118,7 +118,6 @@ export default function BillingSystem() {
     }
   };
 
-  // Check if cart has gold, silver, or mixed items
   const hasGoldItems = cartItems.some(item => item["Metal Type"]?.toLowerCase().includes("gold"));
   const hasSilverItems = cartItems.some(item => item["Metal Type"]?.toLowerCase().includes("silver"));
 
@@ -150,7 +149,6 @@ export default function BillingSystem() {
       return;
     }
 
-    // Validate prices based on metal types
     if (hasGoldItems && goldPrice <= 0) {
       toast({
         title: "Error",
@@ -170,7 +168,20 @@ export default function BillingSystem() {
     }
 
     try {
+      // Create customer first
+      const customerId = `CUST-${Date.now()}`;
+      await addCustomer({
+        "Customer ID": customerId,
+        "Name": customerInfo.name,
+        "Phone": customerInfo.phone,
+        "Email": customerInfo.email,
+        "Status": "New",
+        "Total Purchases": total,
+        "Last Visit": new Date().toISOString().split('T')[0]
+      });
+
       // Create bills for each cart item
+      let firstBill = null;
       for (const item of cartItems) {
         const billNo = `INV-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`;
         
@@ -183,7 +194,7 @@ export default function BillingSystem() {
           "Metal Type": item["Metal Type"],
           "Carat": item.Carat,
           "Weight (g)": item["Weight (g)"] * item.cartQuantity,
-          "Rate per g": item.calculatedRate / item["Weight (g)"], // Rate per gram
+          "Rate per g": item.calculatedRate / item["Weight (g)"],
           "Making Charges": makingCharges,
           "Making Charges Percent": makingChargesPercent,
           "GST (%)": gstPercent,
@@ -192,8 +203,19 @@ export default function BillingSystem() {
         };
 
         await addBill(bill);
+        
+        if (!firstBill) {
+          firstBill = {
+            ...bill,
+            "Date": new Date().toISOString(),
+            "Total Amount": total
+          };
+        }
       }
 
+      // Set completed bill for WhatsApp integration
+      setCompletedBill(firstBill);
+      
       // Clear cart and customer info
       setCartItems([]);
       setCustomerInfo({ name: "", phone: "", email: "" });
@@ -213,6 +235,61 @@ export default function BillingSystem() {
     }
   };
 
+  const handlePrintReceipt = () => {
+    if (!completedBill) {
+      toast({
+        title: "No Receipt to Print",
+        description: "Please complete a sale first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Create a printable receipt
+    const printWindow = window.open('', '_blank');
+    if (printWindow) {
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Receipt - ${completedBill["Bill No"]}</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 20px; }
+              .header { text-align: center; margin-bottom: 20px; }
+              .details { margin: 10px 0; }
+              .total { font-weight: bold; font-size: 18px; }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <h2>GemSpark Jewelry</h2>
+              <p>Receipt</p>
+            </div>
+            <div class="details">
+              <p><strong>Bill No:</strong> ${completedBill["Bill No"]}</p>
+              <p><strong>Date:</strong> ${new Date(completedBill["Date"]).toLocaleDateString()}</p>
+              <p><strong>Customer:</strong> ${completedBill["Customer Name"]}</p>
+              <p><strong>Phone:</strong> ${completedBill["Phone Number"]}</p>
+              <p><strong>Product:</strong> ${completedBill["Product Name"]}</p>
+              <p><strong>Metal Type:</strong> ${completedBill["Metal Type"]}</p>
+              <p><strong>Weight:</strong> ${completedBill["Weight (g)"]}g</p>
+              <p><strong>Rate per gram:</strong> ₹${completedBill["Rate per g"]}</p>
+              <p><strong>Making Charges:</strong> ₹${completedBill["Making Charges"]}</p>
+              <p><strong>GST:</strong> ${completedBill["GST (%)"]}%</p>
+              <p class="total"><strong>Total Amount:</strong> ₹${completedBill["Total Amount"]}</p>
+            </div>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+      printWindow.print();
+    }
+
+    toast({
+      title: "Receipt Printed",
+      description: "Receipt has been sent to printer",
+    });
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
@@ -226,7 +303,7 @@ export default function BillingSystem() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Product Selection */}
         <div className="lg:col-span-2 space-y-6">
-          {/* Pricing Information - Moved to top for better UX */}
+          {/* Pricing Information */}
           <Card>
             <CardHeader>
               <CardTitle>Metal Prices (Required for Adding Items)</CardTitle>
@@ -270,7 +347,6 @@ export default function BillingSystem() {
                 <Button onClick={() => setSearchTerm("")}>{t('common.clear')}</Button>
               </div>
               
-              {/* Product List */}
               <div className="max-h-60 overflow-y-auto space-y-2">
                 {filteredProducts.map((product) => {
                   const calculatedRate = calculateRate(product);
@@ -462,15 +538,44 @@ export default function BillingSystem() {
                 >
                   {t('billing.completeSale')}
                 </Button>
-                <Button variant="outline" className="w-full">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={() => setShowWhatsApp(true)}
+                  disabled={!completedBill}
+                >
                   {t('billing.sendViaWhatsApp')}
                 </Button>
-                <Button variant="outline" className="w-full">
+                <Button 
+                  variant="outline" 
+                  className="w-full"
+                  onClick={handlePrintReceipt}
+                  disabled={!completedBill}
+                >
                   {t('billing.printReceipt')}
                 </Button>
               </div>
             </CardContent>
           </Card>
+
+          {/* WhatsApp Integration */}
+          {showWhatsApp && completedBill && (
+            <Card>
+              <CardContent className="p-4">
+                <WhatsAppIntegration 
+                  bill={completedBill}
+                  customerPhone={completedBill["Phone Number"]}
+                />
+                <Button 
+                  variant="outline" 
+                  className="w-full mt-4"
+                  onClick={() => setShowWhatsApp(false)}
+                >
+                  Close WhatsApp
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
     </div>
