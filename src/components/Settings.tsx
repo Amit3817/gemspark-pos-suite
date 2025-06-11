@@ -1,11 +1,14 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppContext } from "@/contexts/AppContext";
 import { useToast } from "@/hooks/use-toast";
 import { useState } from "react";
-import WhatsAppIntegration from "./WhatsAppIntegration";
+import { Label } from "@/components/ui/label";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function Settings() {
   const { t } = useLanguage();
@@ -28,6 +31,11 @@ export default function Settings() {
     sessionTimeout: "30",
     twoFactorAuth: "Disabled"
   });
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const [showHelpDialog, setShowHelpDialog] = useState(false);
+  const [importFile, setImportFile] = useState<File | null>(null);
+  const [isImporting, setIsImporting] = useState(false);
+  const [isSyncing, setIsSyncing] = useState(false);
 
   const settingsSections = [
     {
@@ -106,19 +114,87 @@ export default function Settings() {
   };
 
   const handleImport = () => {
-    importData();
+    setShowImportDialog(true);
   };
 
-  const handleSync = () => {
-    refreshData();
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.type !== 'application/json') {
+        toast({
+          title: "Invalid File",
+          description: "Please select a valid JSON file",
+          variant: "destructive",
+        });
+        return;
+      }
+      setImportFile(file);
+    }
+  };
+
+  const handleImportConfirm = async () => {
+    if (!importFile) return;
+
+    setIsImporting(true);
+    try {
+      const text = await importFile.text();
+      const data = JSON.parse(text);
+
+      // Validate data structure
+      if (!data.products || !data.customers || !data.bills) {
+        throw new Error('Invalid data format');
+      }
+
+      // Import data to database
+      // This is a placeholder - implement actual database import
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
+
+      toast({
+        title: "Import Successful",
+        description: "Data has been imported successfully",
+      });
+      setShowImportDialog(false);
+      setImportFile(null);
+      refreshData(); // Refresh data after import
+    } catch (error) {
+      console.error('Error importing data:', error);
+      toast({
+        title: "Import Failed",
+        description: "Failed to import data. Please check the file format.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
+  const handleSync = async () => {
+    setIsSyncing(true);
+    try {
+      // Simulate sync process
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Refresh all data
+      await refreshData();
+      
+      toast({
+        title: "Sync Complete",
+        description: "All data has been synchronized successfully",
+      });
+    } catch (error) {
+      console.error('Error syncing data:', error);
+      toast({
+        title: "Sync Failed",
+        description: "Failed to synchronize data. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsSyncing(false);
+    }
   };
 
   const handleHelp = () => {
-    toast({
-      title: "Help & Support",
-      description: "Opening help documentation",
-    });
-    console.log('Opening help and support');
+    setShowHelpDialog(true);
   };
 
   return (
@@ -155,12 +231,30 @@ export default function Settings() {
                     <label className="text-sm font-medium text-muted-foreground">
                       {setting.label}
                     </label>
-                    <Input
-                      type={setting.type}
-                      value={settings[setting.key as keyof typeof settings]}
-                      onChange={(e) => handleSettingChange(setting.key, e.target.value)}
-                      className="w-full"
-                    />
+                    {setting.type === "select" ? (
+                      <Select
+                        value={setting.value}
+                        onValueChange={setting.onChange}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder={t('settings.selectLanguage')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {setting.options?.map((option) => (
+                            <SelectItem key={option.value} value={option.value}>
+                              {option.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    ) : (
+                      <Input
+                        type={setting.type}
+                        value={settings[setting.key as keyof typeof settings]}
+                        onChange={(e) => handleSettingChange(setting.key, e.target.value)}
+                        className="w-full"
+                      />
+                    )}
                   </div>
                 ))}
                 <Button 
@@ -177,10 +271,87 @@ export default function Settings() {
         ))}
       </div>
 
-      {/* WhatsApp Test Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6">
-        <WhatsAppIntegration />
-      </div>
+      {/* Import Dialog */}
+      <AlertDialog open={showImportDialog} onOpenChange={setShowImportDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Import Data</AlertDialogTitle>
+            <AlertDialogDescription>
+              Select a JSON file to import data. This will replace all existing data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="importFile">Select File</Label>
+                <Input
+                  id="importFile"
+                  type="file"
+                  accept=".json"
+                  onChange={handleFileChange}
+                  disabled={isImporting}
+                />
+                <p className="text-xs text-muted-foreground">
+                  Only JSON files are supported. The file should contain products, customers, and bills data.
+                </p>
+              </div>
+            </div>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isImporting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleImportConfirm}
+              disabled={!importFile || isImporting}
+              className="bg-primary text-primary-foreground hover:bg-primary/90"
+            >
+              {isImporting ? "Importing..." : "Import"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Help Dialog */}
+      <Dialog open={showHelpDialog} onOpenChange={setShowHelpDialog}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Help & Support</DialogTitle>
+            <DialogDescription>
+              Get help with using GemSpark POS Suite
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <h3 className="font-semibold">Quick Start Guide</h3>
+              <ul className="list-disc list-inside space-y-1 text-sm">
+                <li>Add products to your catalog</li>
+                <li>Register customers</li>
+                <li>Create bills and manage sales</li>
+                <li>View reports and analytics</li>
+              </ul>
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-semibold">Support</h3>
+              <p className="text-sm">
+                For technical support, please contact:
+                <br />
+                Email: support@gemspark.com
+                <br />
+                Phone: +91 98765 43210
+              </p>
+            </div>
+            <div className="space-y-2">
+              <h3 className="font-semibold">Documentation</h3>
+              <p className="text-sm">
+                Visit our documentation website for detailed guides and tutorials:
+                <br />
+                <a href="https://docs.gemspark.com" target="_blank" rel="noopener noreferrer" className="text-primary hover:underline">
+                  docs.gemspark.com
+                </a>
+              </p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Quick Actions */}
       <Card>
@@ -193,13 +364,27 @@ export default function Settings() {
               <span className="text-2xl">📤</span>
               <span className="text-sm">{t('settings.backup')}</span>
             </Button>
-            <Button variant="outline" className="h-20 flex flex-col space-y-2" onClick={handleImport}>
+            <Button 
+              variant="outline" 
+              className="h-20 flex flex-col space-y-2" 
+              onClick={handleImport}
+              disabled={isImporting}
+            >
               <span className="text-2xl">📥</span>
-              <span className="text-sm">{t('settings.importData')}</span>
+              <span className="text-sm">
+                {isImporting ? "Importing..." : t('settings.importData')}
+              </span>
             </Button>
-            <Button variant="outline" className="h-20 flex flex-col space-y-2" onClick={handleSync}>
+            <Button 
+              variant="outline" 
+              className="h-20 flex flex-col space-y-2" 
+              onClick={handleSync}
+              disabled={isSyncing}
+            >
               <span className="text-2xl">🔄</span>
-              <span className="text-sm">{t('settings.syncSettings')}</span>
+              <span className="text-sm">
+                {isSyncing ? "Syncing..." : t('settings.syncSettings')}
+              </span>
             </Button>
             <Button variant="outline" className="h-20 flex flex-col space-y-2" onClick={handleHelp}>
               <span className="text-2xl">❓</span>

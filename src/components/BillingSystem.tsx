@@ -1,24 +1,33 @@
-import React, { useState, useEffect } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import React, { useState, useEffect, useMemo } from "react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Separator } from "@/components/ui/separator";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useQuery } from "@tanstack/react-query";
-import { supabaseApi, Product, Bill } from "@/services/supabaseApi";
 import { useAppContext } from "@/contexts/AppContext";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
+import { ShoppingCart, Trash2, Plus, Minus, Printer, Send, Search, Share2, UserPlus, AlertCircle, Info, IndianRupee, Receipt, MessageSquare, Download } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { WhatsAppIntegration } from "./WhatsAppIntegration";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Save } from "lucide-react";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Link } from "react-router-dom";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { ProductBrowser } from "@/components/ProductBrowser";
 
 interface CartItem extends Product {
   cartQuantity: number;
   calculatedRate: number;
 }
 
-export default function BillingSystem() {
+const BillingSystem = () => {
   const { t } = useLanguage();
-  const { addBill, addCustomer, refreshData } = useAppContext();
+  const { addBill, addCustomer, refreshData, bills, products, customers } = useAppContext();
   const { toast } = useToast();
 
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
@@ -27,20 +36,46 @@ export default function BillingSystem() {
     phone: "",
     email: ""
   });
-  const [searchTerm, setSearchTerm] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [goldPrice, setGoldPrice] = useState<string>("");
   const [silverPrice, setSilverPrice] = useState<string>("");
   const [makingChargesPercent, setMakingChargesPercent] = useState<number>(10);
+  const [gstPercent, setGstPercent] = useState<number>(3);
   const [completedBill, setCompletedBill] = useState<Bill | null>(null);
+  const [selectedCustomer, setSelectedCustomer] = useState("");
+  const [selectedProducts, setSelectedProducts] = useState<Array<{
+    id: string;
+    name: string;
+    quantity: number;
+    price: number;
+    weight: number;
+    makingCharges: number;
+    gst: number;
+  }>>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [formSubmitted, setFormSubmitted] = useState(false);
+  const [showProductBrowser, setShowProductBrowser] = useState(false);
 
   // Load saved data from localStorage on component mount
   useEffect(() => {
+    const savedCart = localStorage.getItem('cartItems');
     const savedData = localStorage.getItem('billingSystemData');
+    
+    if (savedCart) {
+      try {
+        const parsedCart = JSON.parse(savedCart);
+        setCartItems(parsedCart.map((item: CartItem) => ({
+          ...item,
+          calculatedRate: calculateRate(item)
+        })));
+      } catch (error) {
+        console.error('Error loading cart:', error);
+      }
+    }
+    
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
-        setCartItems(parsed.cartItems || []);
         setCustomerInfo(parsed.customerInfo || { name: "", phone: "", email: "" });
         setGoldPrice(parsed.goldPrice || "");
         setSilverPrice(parsed.silverPrice || "");
@@ -54,24 +89,13 @@ export default function BillingSystem() {
   // Save data to localStorage whenever state changes
   useEffect(() => {
     const dataToSave = {
-      cartItems,
       customerInfo,
       goldPrice,
       silverPrice,
       makingChargesPercent
     };
     localStorage.setItem('billingSystemData', JSON.stringify(dataToSave));
-  }, [cartItems, customerInfo, goldPrice, silverPrice, makingChargesPercent]);
-
-  const { data: products = [] } = useQuery({
-    queryKey: ['products'],
-    queryFn: supabaseApi.getAllProducts,
-  });
-
-  const filteredProducts = products.filter(product =>
-    product["Product Name"].toLowerCase().includes(searchTerm.toLowerCase()) ||
-    product.Category.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  }, [customerInfo, goldPrice, silverPrice, makingChargesPercent]);
 
   const calculateRate = (product: Product): number => {
     const metalType = product["Metal Type"]?.toLowerCase();
@@ -85,36 +109,6 @@ export default function BillingSystem() {
       return (silverPriceNum / 10) * weight;
     }
     return 0;
-  };
-
-  const addToCart = (product: Product) => {
-    const calculatedRate = calculateRate(product);
-    
-    if (calculatedRate === 0) {
-      const metalType = product["Metal Type"]?.toLowerCase();
-      const missingPrice = metalType?.includes("gold") ? "gold" : "silver";
-      toast({
-        title: "Price Required",
-        description: `Please set ${missingPrice} price before adding this item`,
-        variant: "destructive",
-      });
-      return;
-    }
-
-    const existingItem = cartItems.find(item => item["Product ID"] === product["Product ID"]);
-    if (existingItem) {
-      setCartItems(cartItems.map(item =>
-        item["Product ID"] === product["Product ID"]
-          ? { ...item, cartQuantity: item.cartQuantity + 1, calculatedRate }
-          : item
-      ));
-    } else {
-      setCartItems([...cartItems, { ...product, cartQuantity: 1, calculatedRate }]);
-    }
-    toast({
-      title: "Added to Cart",
-      description: `${product["Product Name"]} added to cart`,
-    });
   };
 
   const updateCartRates = () => {
@@ -131,18 +125,26 @@ export default function BillingSystem() {
   }, [goldPrice, silverPrice]);
 
   const removeFromCart = (productId: string) => {
-    setCartItems(cartItems.filter(item => item["Product ID"] !== productId));
+    const newCartItems = cartItems.filter(item => item["Product ID"] !== productId);
+    setCartItems(newCartItems);
+    localStorage.setItem('cartItems', JSON.stringify(newCartItems));
+    toast({
+      title: t('billing.toast.removedFromCart'),
+      description: t('billing.toast.itemRemoved'),
+    });
   };
 
   const updateCartQuantity = (productId: string, quantity: number) => {
     if (quantity <= 0) {
       removeFromCart(productId);
     } else {
-      setCartItems(cartItems.map(item =>
+      const newCartItems = cartItems.map(item =>
         item["Product ID"] === productId
           ? { ...item, cartQuantity: Math.min(quantity, item.Quantity) }
           : item
-      ));
+      );
+      setCartItems(newCartItems);
+      localStorage.setItem('cartItems', JSON.stringify(newCartItems));
     }
   };
 
@@ -156,7 +158,6 @@ export default function BillingSystem() {
   }, 0);
 
   const makingCharges = (subtotal * makingChargesPercent) / 100;
-  const gstPercent = 3;
   const gstAmount = (subtotal + makingCharges) * (gstPercent / 100);
   const total = subtotal + makingCharges + gstAmount;
 
@@ -345,10 +346,12 @@ export default function BillingSystem() {
   };
 
   const handleCompleteSale = async () => {
+    setFormSubmitted(true);
+    
     if (cartItems.length === 0) {
       toast({
-        title: "Error",
-        description: "Please add items to cart before completing sale",
+        title: t('billing.toast.missingInfo'),
+        description: t('billing.toast.fillRequiredDetails'),
         variant: "destructive",
       });
       return;
@@ -356,8 +359,8 @@ export default function BillingSystem() {
 
     if (!customerInfo.name || !customerInfo.phone) {
       toast({
-        title: "Error",
-        description: "Please provide customer name and phone number",
+        title: t('billing.toast.missingInfo'),
+        description: t('billing.toast.fillRequiredDetails'),
         variant: "destructive",
       });
       return;
@@ -365,8 +368,8 @@ export default function BillingSystem() {
 
     if (hasGoldItems && goldPriceNum <= 0) {
       toast({
-        title: "Error",
-        description: "Please enter gold price for gold items",
+        title: t('billing.toast.missingInfo'),
+        description: t('billing.toast.fillRequiredDetails'),
         variant: "destructive",
       });
       return;
@@ -374,8 +377,8 @@ export default function BillingSystem() {
 
     if (hasSilverItems && silverPriceNum <= 0) {
       toast({
-        title: "Error",
-        description: "Please enter silver price for silver items",
+        title: t('billing.toast.missingInfo'),
+        description: t('billing.toast.fillRequiredDetails'),
         variant: "destructive",
       });
       return;
@@ -431,17 +434,12 @@ export default function BillingSystem() {
       // Set completed bill for WhatsApp integration and printing
       setCompletedBill(firstBill);
       
+      // Clear cart immediately after successful bill creation
+      setCartItems([]);
+      localStorage.removeItem('cartItems');
+      
       // Refresh data to update all lists
       await refreshData();
-      
-      // Clear cart and customer info and reset form
-      setCartItems([]);
-      setCustomerInfo({ name: "", phone: "", email: "" });
-      setGoldPrice("");
-      setSilverPrice("");
-      
-      // Clear localStorage
-      localStorage.removeItem('billingSystemData');
       
       toast({
         title: "Sale Completed",
@@ -450,97 +448,344 @@ export default function BillingSystem() {
     } catch (error) {
       console.error('Error completing sale:', error);
       toast({
-        title: "Error",
-        description: "Failed to complete sale",
+        title: t('billing.toast.error'),
+        description: t('billing.toast.failedToComplete'),
         variant: "destructive",
       });
     }
   };
 
-  const handleSendWhatsApp = async () => {
-    if (!completedBill) {
+  const clearBillingData = () => {
+    // Show confirmation dialog before clearing
+    const shouldClear = window.confirm(t('billing.confirmClearData'));
+    if (!shouldClear) return;
+
+    setCustomerInfo({ name: "", phone: "", email: "" });
+    setGoldPrice("");
+    setSilverPrice("");
+    setCompletedBill(null);
+    setFormSubmitted(false);
+    localStorage.removeItem('billingSystemData');
+    
+    toast({
+      title: t('billing.toast.dataCleared'),
+      description: t('billing.toast.readyForNewSale'),
+    });
+  };
+
+  // Add this function to check if all required details are filled
+  const canProceedWithSale = () => {
+    return cartItems.length > 0 && 
+           customerInfo.name && 
+           customerInfo.phone && 
+           customerInfo.phone.length >= 10 &&
+           ((hasGoldItems && goldPriceNum > 0) || !hasGoldItems) &&
+           ((hasSilverItems && silverPriceNum > 0) || !hasSilverItems);
+  };
+
+  // Add this new function for downloading invoice
+  const handleDownloadInvoice = async () => {
+    if (!canProceedWithSale()) {
       toast({
-        title: "No Bill to Send",
-        description: "Please complete a sale first",
+        title: t('billing.toast.missingInfo'),
+        description: t('billing.toast.fillRequiredDetails'),
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Show loading toast
+    const loadingToast = toast({
+      title: t('billing.toast.preparingInvoice'),
+      description: t('billing.toast.generatingInvoice'),
+    });
+
+    try {
+      // Create a temporary bill for invoice
+      const tempBill = {
+        "Bill No": `INV-${Date.now()}-${Math.random().toString(36).substr(2, 5)}`,
+        "Date": new Date().toISOString(),
+        "Customer Name": customerInfo.name,
+        "Phone Number": customerInfo.phone,
+        "Product ID": cartItems[0]["Product ID"],
+        "Product Name": cartItems.map(item => 
+          `${item["Product Name"]} (${t('billing.quantity')}: ${item.cartQuantity})`
+        ).join(", "),
+        "Metal Type": cartItems.map(item => 
+          `${item["Metal Type"] || t('common.none')}`
+        ).join(", "),
+        "Carat": cartItems[0].Carat || t('common.none'),
+        "Weight (g)": cartItems.reduce((sum, item) => sum + (item["Weight (g)"] * item.cartQuantity), 0),
+        "Rate per g": cartItems[0].calculatedRate / cartItems[0]["Weight (g)"],
+        "Making Charges": makingCharges,
+        "Making Charges Percent": makingChargesPercent,
+        "GST (%)": gstPercent,
+        "Gold Price per 10g": hasGoldItems ? goldPriceNum : 0,
+        "Silver Price per 10g": hasSilverItems ? silverPriceNum : 0,
+        "Total Amount": total
+      };
+
+      // Create the invoice HTML content
+      const invoiceHtml = `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <title>${t('billing.details.title')} - ${tempBill["Bill No"]}</title>
+            <style>
+              body { 
+                font-family: Arial, sans-serif; 
+                margin: 0; 
+                padding: 20px; 
+                background: white;
+                line-height: 1.6;
+              }
+              .header { 
+                text-align: center; 
+                margin-bottom: 30px; 
+                border-bottom: 2px solid #333;
+                padding-bottom: 20px;
+              }
+              .company-name { 
+                font-size: 28px; 
+                font-weight: bold; 
+                color: #333; 
+                margin-bottom: 5px;
+              }
+              .invoice-title { 
+                font-size: 20px; 
+                color: #666; 
+              }
+              .details-section { 
+                margin: 20px 0; 
+                display: flex; 
+                justify-content: space-between;
+              }
+              .details-left, .details-right { 
+                width: 45%; 
+              }
+              .detail-row { 
+                margin: 8px 0; 
+                display: flex; 
+                justify-content: space-between;
+              }
+              .label { 
+                font-weight: bold; 
+                color: #333; 
+              }
+              .value { 
+                color: #666; 
+              }
+              .items-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 20px 0;
+              }
+              .items-table th, .items-table td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+              }
+              .items-table th {
+                background-color: #f5f5f5;
+              }
+              .total-section { 
+                margin-top: 30px; 
+                border-top: 2px solid #333; 
+                padding-top: 15px;
+              }
+              .total-row { 
+                display: flex; 
+                justify-content: space-between; 
+                margin: 5px 0; 
+                font-size: 18px; 
+                font-weight: bold;
+              }
+              .footer { 
+                text-align: center; 
+                margin-top: 30px; 
+                font-size: 12px; 
+                color: #666;
+              }
+            </style>
+          </head>
+          <body>
+            <div class="header">
+              <div class="company-name">${t('company.name')}</div>
+              <div class="invoice-title">${t('billing.details.title')}</div>
+            </div>
+            
+            <div class="details-section">
+              <div class="details-left">
+                <div class="detail-row">
+                  <span class="label">${t('bills.billId')}:</span>
+                  <span class="value">${tempBill["Bill No"]}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="label">${t('bills.date')}:</span>
+                  <span class="value">${new Date(tempBill["Date"]).toLocaleDateString()}</span>
+                </div>
+              </div>
+              <div class="details-right">
+                <div class="detail-row">
+                  <span class="label">${t('bills.customerName')}:</span>
+                  <span class="value">${tempBill["Customer Name"]}</span>
+                </div>
+                <div class="detail-row">
+                  <span class="label">${t('bills.phone')}:</span>
+                  <span class="value">${tempBill["Phone Number"]}</span>
+                </div>
+              </div>
+            </div>
+
+            <table class="items-table">
+              <thead>
+                <tr>
+                  <th>${t('products.productName')}</th>
+                  <th>${t('products.metalType')}</th>
+                  <th>${t('products.weight')}</th>
+                  <th>${t('products.quantity')}</th>
+                  <th>${t('metalRates.perGram')}</th>
+                  <th>${t('bills.amount')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${cartItems.map(item => `
+                  <tr>
+                    <td>${item["Product Name"]}</td>
+                    <td>${item["Metal Type"] || t('common.none')}</td>
+                    <td>${item["Weight (g)"]}g</td>
+                    <td>${item.cartQuantity}</td>
+                    <td>₹${(item.calculatedRate / item["Weight (g)"]).toFixed(2)}</td>
+                    <td>₹${(item.calculatedRate * item.cartQuantity).toFixed(2)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+
+            <div class="total-section">
+              <div class="detail-row">
+                <span class="label">${t('billing.makingCharges')} (${makingChargesPercent}%):</span>
+                <span class="value">₹${makingCharges.toFixed(2)}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">${t('billing.gst')} (${gstPercent}%):</span>
+                <span class="value">₹${gstAmount.toFixed(2)}</span>
+              </div>
+              <div class="total-row">
+                <span>${t('billing.total')}:</span>
+                <span>₹${total.toFixed(2)}</span>
+              </div>
+            </div>
+
+            <div class="footer">
+              <p>${t('billing.thankYou')}</p>
+              <p>${t('company.name')} • ${t('billing.contact')}: ${t('company.phone')} • ${t('billing.email')}: ${t('company.email')}</p>
+            </div>
+          </body>
+        </html>
+      `;
+
+      // Create and download the invoice file
+      const blob = new Blob([invoiceHtml], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `Invoice-${tempBill["Bill No"]}.html`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      // Dismiss loading toast
+      toast.dismiss(loadingToast);
+
+      // Show success toast
+      toast({
+        title: t('billing.toast.invoiceDownloaded'),
+        description: t('billing.toast.invoiceDownloadSuccess'),
+        duration: 5000,
+      });
+
+      // Set completed bill
+      setCompletedBill(tempBill);
+
+    } catch (error) {
+      // Just log the error without showing a toast
+      console.error('Error downloading invoice:', error);
+    }
+  };
+
+  // Modify handleSendWhatsApp to only handle WhatsApp
+  const handleSendWhatsApp = () => {
+    if (!canProceedWithSale()) {
+      toast({
+        title: t('billing.toast.missingInfo'),
+        description: t('billing.toast.fillRequiredDetails'),
         variant: "destructive",
       });
       return;
     }
 
     try {
-      toast({
-        title: "Generating Invoice",
-        description: "Creating PDF invoice...",
-      });
+      // Create WhatsApp message
+      const companyInfo = {
+        name: t('company.name'),
+        phone: t('company.phone'),
+        email: t('company.email'),
+        address: t('company.address'),
+      };
 
-      // Generate PDF
-      const pdfDataUrl = await generateBillPDF(completedBill);
-      
-      // Create message with PDF attachment reference
-      const messageToSend = `*GemSpark Jewelry - Invoice*
+      const messageToSend = `*${companyInfo.name} - ${t('billing.details.title')}*
 
-📧 *Invoice No:* ${completedBill["Bill No"]}
-📅 *Date:* ${new Date(completedBill["Date"]).toLocaleDateString()}
+📝 *${t('bills.billId')}:* ${completedBill?.["Bill No"] || `INV-${Date.now()}`}
+📅 *${t('bills.date')}:* ${new Date().toLocaleDateString()}
 
-👤 *Customer:* ${completedBill["Customer Name"]}
-📱 *Phone:* ${completedBill["Phone Number"]}
+👤 *${t('bills.customerName')}:* ${customerInfo.name}
+📱 *${t('bills.phone')}:* ${customerInfo.phone}
 
-💎 *Product Details:*
-• Product: ${completedBill["Product Name"]}
-• Metal: ${completedBill["Metal Type"]}
-• Weight: ${completedBill["Weight (g)"]}g
-• Rate: ₹${completedBill["Rate per g"]}/g
+💎 *${t('billing.details.items')}:*
+${cartItems.map(item => 
+  `• ${item["Product Name"]} (${item["Metal Type"] || t('common.none')})
+   - ${t('products.weight')}: ${item["Weight (g)"]}g
+   - ${t('products.quantity')}: ${item.cartQuantity}
+   - ${t('metalRates.perGram')}: ₹${(item.calculatedRate / item["Weight (g)"]).toFixed(2)}
+   - ${t('billing.total')}: ₹${(item.calculatedRate * item.cartQuantity).toFixed(2)}`
+).join('\n\n')}
 
-💰 *Amount Details:*
-• Making Charges: ₹${completedBill["Making Charges"]}
-• GST: ${completedBill["GST (%)"]}%
-• *Total: ₹${completedBill["Total Amount"]}*
+💰 *${t('billing.details.summary')}:*
+• ${t('billing.makingCharges')} (${makingChargesPercent}%): ₹${makingCharges.toFixed(2)}
+• ${t('billing.gst')} (${gstPercent}%): ₹${gstAmount.toFixed(2)}
+• *${t('billing.total')}: ₹${total.toFixed(2)}*
 
-📄 *PDF Invoice attached separately*
+📄 *${t('whatsapp.preview.fullDetails')}*
 
-Thank you for choosing GemSpark Jewelry! ✨
+${t('billing.thankYou')} ✨
 
-📞 Contact: +91 98765 43210
-📧 Email: info@gemspark.com`;
+📞 ${t('billing.contact')}: ${companyInfo.phone}
+📧 ${t('billing.email')}: ${companyInfo.email}`;
 
       // Format phone number
-      let formattedPhone = completedBill["Phone Number"].replace(/\D/g, '');
+      let formattedPhone = customerInfo.phone.replace(/\D/g, '');
       if (!formattedPhone.startsWith('91')) {
         formattedPhone = '91' + formattedPhone;
       }
 
-      // Create WhatsApp URL and open it
+      // Open WhatsApp
       const whatsappUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(messageToSend)}`;
       window.open(whatsappUrl, '_blank');
 
-      // Also create a downloadable PDF link
-      const blob = new Blob([`
-        <html>
-          <head><title>Invoice - ${completedBill["Bill No"]}</title></head>
-          <body>
-            <p>Please save this invoice and share it via WhatsApp:</p>
-            <iframe src="${pdfDataUrl}" width="100%" height="600px"></iframe>
-          </body>
-        </html>
-      `], { type: 'text/html' });
-      
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `Invoice-${completedBill["Bill No"]}.html`;
-      link.click();
-      URL.revokeObjectURL(url);
-
       toast({
-        title: "Invoice Ready",
-        description: "WhatsApp opened with message. Invoice file downloaded - please attach it to your WhatsApp message.",
+        title: t('billing.toast.whatsappOpened'),
+        description: t('billing.toast.attachInvoice'),
+        duration: 10000,
       });
 
     } catch (error) {
-      console.error('Error generating invoice:', error);
+      console.error('Error opening WhatsApp:', error);
       toast({
-        title: "Error",
-        description: "Failed to generate invoice",
+        title: t('billing.toast.error'),
+        description: t('billing.toast.whatsappError'),
         variant: "destructive",
       });
     }
@@ -549,8 +794,8 @@ Thank you for choosing GemSpark Jewelry! ✨
   const handlePrintReceipt = () => {
     if (!completedBill) {
       toast({
-        title: "No Receipt to Print",
-        description: "Please complete a sale first",
+        title: t('billing.toast.noReceipt'),
+        description: t('billing.toast.completeSaleFirst'),
         variant: "destructive",
       });
       return;
@@ -562,7 +807,7 @@ Thank you for choosing GemSpark Jewelry! ✨
       printWindow.document.write(`
         <html>
           <head>
-            <title>Receipt - ${completedBill["Bill No"]}</title>
+            <title>${t('billing.details.title')} - ${completedBill["Bill No"]}</title>
             <style>
               body { font-family: Arial, sans-serif; margin: 20px; }
               .header { text-align: center; margin-bottom: 20px; }
@@ -572,303 +817,542 @@ Thank you for choosing GemSpark Jewelry! ✨
           </head>
           <body>
             <div class="header">
-              <h2>GemSpark Jewelry</h2>
-              <p>Receipt</p>
+              <h2>${t('company.name')}</h2>
+              <p>${t('billing.details.title')}</p>
             </div>
             <div class="details">
-              <p><strong>Bill No:</strong> ${completedBill["Bill No"]}</p>
-              <p><strong>Date:</strong> ${new Date(completedBill["Date"]).toLocaleDateString()}</p>
-              <p><strong>Customer:</strong> ${completedBill["Customer Name"]}</p>
-              <p><strong>Phone:</strong> ${completedBill["Phone Number"]}</p>
-              <p><strong>Product:</strong> ${completedBill["Product Name"]}</p>
-              <p><strong>Metal Type:</strong> ${completedBill["Metal Type"]}</p>
-              <p><strong>Weight:</strong> ${completedBill["Weight (g)"]}g</p>
-              <p><strong>Rate per gram:</strong> ₹${completedBill["Rate per g"]}</p>
-              <p><strong>Making Charges:</strong> ₹${completedBill["Making Charges"]}</p>
-              <p><strong>GST:</strong> ${completedBill["GST (%)"]}%</p>
-              <p class="total"><strong>Total Amount:</strong> ₹${completedBill["Total Amount"]}</p>
+              <p><strong>${t('bills.billId')}:</strong> ${completedBill["Bill No"]}</p>
+              <p><strong>${t('bills.date')}:</strong> ${new Date(completedBill["Date"]).toLocaleDateString()}</p>
+              <p><strong>${t('bills.customerName')}:</strong> ${completedBill["Customer Name"]}</p>
+              <p><strong>${t('bills.phone')}:</strong> ${completedBill["Phone Number"]}</p>
+              <p><strong>${t('products.productName')}:</strong> ${completedBill["Product Name"]}</p>
+              <p><strong>${t('products.metalType')}:</strong> ${completedBill["Metal Type"]}</p>
+              <p><strong>${t('products.weight')}:</strong> ${completedBill["Weight (g)"]}g</p>
+              <p><strong>${t('metalRates.perGram')}:</strong> ₹${completedBill["Rate per g"]}</p>
+              <p><strong>${t('billing.makingCharges')}:</strong> ₹${completedBill["Making Charges"]}</p>
+              <p><strong>${t('billing.gst')}:</strong> ${completedBill["GST (%)"]}%</p>
+              <p class="total"><strong>${t('billing.total')}:</strong> ₹${completedBill["Total Amount"]}</p>
             </div>
           </body>
         </html>
       `);
       printWindow.document.close();
       printWindow.print();
+      
+      // Clear the billing data after successful print
+      clearBillingData();
     }
 
     toast({
-      title: "Receipt Printed",
-      description: "Receipt has been sent to printer",
+      title: t('billing.toast.receiptPrinted'),
+      description: t('billing.toast.receiptSentToPrinter'),
     });
+  };
+
+  // Filter products based on search
+  const filteredProducts = useMemo(() => {
+    const searchLower = searchQuery.toLowerCase();
+    return products.filter(product => 
+      (product["Product Name"]?.toLowerCase() || '').includes(searchLower) ||
+      (product["Metal Type"]?.toLowerCase() || '').includes(searchLower)
+    );
+  }, [products, searchQuery]);
+
+  // Calculate bill totals
+  const billTotals = useMemo(() => {
+    return selectedProducts.reduce((acc, product) => {
+      const subtotal = product.price * product.quantity;
+      const makingCharges = product.makingCharges * product.quantity;
+      const gstAmount = (subtotal + makingCharges) * (product.gst / 100);
+      return {
+        subtotal: acc.subtotal + subtotal,
+        makingCharges: acc.makingCharges + makingCharges,
+        gst: acc.gst + gstAmount,
+        total: acc.total + subtotal + makingCharges + gstAmount
+      };
+    }, { subtotal: 0, makingCharges: 0, gst: 0, total: 0 });
+  }, [selectedProducts]);
+
+  // Product selection columns for DataGrid
+  const productColumns: GridColDef[] = [
+    { field: 'name', headerName: t('billing.productName'), flex: 1 },
+    { field: 'metalType', headerName: t('billing.metalType'), flex: 1 },
+    { 
+      field: 'price', 
+      headerName: t('billing.price'), 
+      flex: 1,
+      renderCell: (params) => `₹${params.value.toLocaleString()}`
+    },
+    { 
+      field: 'weight', 
+      headerName: t('billing.weight'), 
+      flex: 1,
+      renderCell: (params) => `${params.value}g`
+    },
+    {
+      field: 'actions',
+      headerName: t('billing.actions'),
+      flex: 1,
+      renderCell: (params) => (
+        <Button
+          size="sm"
+          variant="outline"
+          onClick={() => handleAddProduct(params.row)}
+        >
+          <Plus className="h-4 w-4 mr-1" />
+          {t('billing.add')}
+        </Button>
+      )
+    }
+  ];
+
+  const handleAddProduct = (product: any) => {
+    setSelectedProducts(prev => [...prev, {
+      id: product["Product ID"],
+      name: product["Product Name"],
+      quantity: 1,
+      price: product["Rate per g"] * product["Weight (g)"],
+      weight: product["Weight (g)"],
+      makingCharges: product["Making Charges"] || 0,
+      gst: product["GST (%)"] || 0
+    }]);
+  };
+
+  const handleRemoveProduct = (productId: string) => {
+    setSelectedProducts(prev => prev.filter(p => p.id !== productId));
+  };
+
+  const handleQuantityChange = (productId: string, quantity: number) => {
+    setSelectedProducts(prev => prev.map(p => 
+      p.id === productId ? { ...p, quantity: Math.max(1, quantity) } : p
+    ));
+  };
+
+  const handleGenerateBill = () => {
+    if (!selectedCustomer || selectedProducts.length === 0) return;
+
+    const newBill = {
+      "Bill No": `BILL-${Date.now()}`,
+      "Date": new Date().toISOString(),
+      "Customer Name": selectedCustomer,
+      "Product ID": selectedProducts[0].id,
+      "Product Name": selectedProducts[0].name,
+      "Quantity": selectedProducts[0].quantity,
+      "Weight (g)": selectedProducts[0].weight,
+      "Rate per g": selectedProducts[0].price / selectedProducts[0].weight,
+      "Making Charges": selectedProducts[0].makingCharges,
+      "GST (%)": selectedProducts[0].gst,
+      "Total Amount": billTotals.total,
+      "Status": "Completed"
+    };
+
+    addBill(newBill);
+    // Reset form
+    setSelectedCustomer("");
+    setSelectedProducts([]);
   };
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h2 className="text-3xl font-bold text-primary">{t('nav.billing')}</h2>
-        <div className="flex space-x-3">
-          <Button variant="outline">{t('billing.loadDraft')}</Button>
-          <Button variant="outline">{t('common.save')} {t('billing.draft')}</Button>
-        </div>
+      {/* Header Section */}
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <h2 className="text-3xl font-bold text-primary">{t('billing.title')}</h2>
+        <Button
+          variant="outline"
+          onClick={() => setShowProductBrowser(true)}
+          className="hover:bg-gray-100"
+        >
+          <ShoppingCart className="mr-2 h-4 w-4" />
+          {t('billing.browseProducts')}
+        </Button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Product Selection */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Pricing Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Metal Prices (Required for Adding Items)</CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="gold-price">Gold Price (per 10g)</Label>
-                <Input
-                  id="gold-price"
-                  type="number"
-                  value={goldPrice}
-                  onChange={(e) => setGoldPrice(e.target.value)}
-                  placeholder="Enter gold price per 10g"
-                />
-              </div>
-              <div>
-                <Label htmlFor="silver-price">Silver Price (per 10g)</Label>
-                <Input
-                  id="silver-price"
-                  type="number"
-                  value={silverPrice}
-                  onChange={(e) => setSilverPrice(e.target.value)}
-                  placeholder="Enter silver price per 10g"
-                />
-              </div>
-            </CardContent>
-          </Card>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <Card className="hover:shadow-lg transition-shadow border-0 bg-gradient-to-br from-white to-blue-50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <span className="text-2xl">🛒</span>
+              {t('billing.cartItems')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{cartItems.length}</div>
+            <p className="text-sm text-muted-foreground mt-1">
+              {t('billing.items')}
+            </p>
+          </CardContent>
+        </Card>
 
-          {/* ... keep existing code (Product Selection Card) */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('billing.addProducts')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex space-x-4">
-                <Input 
-                  placeholder={t('products.search')} 
-                  className="flex-1"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-                <Button onClick={() => setSearchTerm("")}>{t('common.clear')}</Button>
-              </div>
-              
-              <div className="max-h-60 overflow-y-auto space-y-2">
-                {filteredProducts.map((product) => {
-                  const calculatedRate = calculateRate(product);
-                  return (
-                    <div key={product["Product ID"]} className="flex items-center justify-between p-3 border rounded-lg">
-                      <div>
-                        <h4 className="font-medium">{product["Product Name"]}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          {product.Category} • {product["Metal Type"]} • Stock: {product.Quantity}
-                        </p>
-                        <p className="text-sm font-medium">
-                          {calculatedRate > 0 ? `₹${calculatedRate.toLocaleString()}` : 'Set metal price first'}
-                        </p>
+        <Card className="hover:shadow-lg transition-shadow border-0 bg-gradient-to-br from-white to-green-50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <span className="text-2xl">💰</span>
+              {t('billing.subtotal')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">₹{subtotal.toFixed(2)}</div>
+            <p className="text-sm text-muted-foreground mt-1">
+              {t('billing.beforeTax')}
+            </p>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow border-0 bg-gradient-to-br from-white to-yellow-50">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground flex items-center gap-2">
+              <span className="text-2xl">💵</span>
+              {t('billing.total')}
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-yellow-600">₹{total.toFixed(2)}</div>
+            <p className="text-sm text-muted-foreground mt-1">
+              {t('billing.total')}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Customer Details and Metal Rates */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card className="hover:shadow-lg transition-shadow border-0 bg-gradient-to-br from-white to-gray-50">
+          <CardHeader>
+            <CardTitle className="text-lg font-medium flex items-center gap-2">
+              <span className="text-xl">👤</span>
+              {t('billing.customerDetails')}
+            </CardTitle>
+            <CardDescription>{t('billing.customerInfoHelp')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="customerName" className="text-sm font-medium">
+                {t('billing.customerName')}
+              </Label>
+              <Input
+                id="customerName"
+                value={customerInfo.name}
+                onChange={(e) => setCustomerInfo({ ...customerInfo, name: e.target.value })}
+                className="bg-white"
+                placeholder={t('billing.customerNamePlaceholder')}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="phoneNumber" className="text-sm font-medium">
+                {t('billing.customerPhone')}
+              </Label>
+              <Input
+                id="phoneNumber"
+                value={customerInfo.phone}
+                onChange={(e) => setCustomerInfo({ ...customerInfo, phone: e.target.value })}
+                className="bg-white"
+                placeholder={t('billing.customerPhonePlaceholder')}
+              />
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="hover:shadow-lg transition-shadow border-0 bg-gradient-to-br from-white to-gray-50">
+          <CardHeader>
+            <CardTitle className="text-lg font-medium flex items-center gap-2">
+              <span className="text-xl">💎</span>
+              {t('billing.metalRates')}
+            </CardTitle>
+            <CardDescription>{t('billing.metalRatesHelp')}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="goldPrice" className="text-sm font-medium">
+                {t('billing.goldPrice')}
+              </Label>
+              <Input
+                id="goldPrice"
+                type="number"
+                value={goldPrice}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  const cleanValue = value === "" ? "" : String(Number(value));
+                  setGoldPrice(cleanValue);
+                }}
+                className="bg-white"
+                placeholder={t('billing.goldPricePlaceholder')}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="silverPrice" className="text-sm font-medium">
+                {t('billing.silverPrice')}
+              </Label>
+              <Input
+                id="silverPrice"
+                type="number"
+                value={silverPrice}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  const cleanValue = value === "" ? "" : String(Number(value));
+                  setSilverPrice(cleanValue);
+                }}
+                className="bg-white"
+                placeholder={t('billing.silverPricePlaceholder')}
+              />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Charges and Tax */}
+      <Card className="hover:shadow-lg transition-shadow border-0 bg-gradient-to-br from-white to-gray-50">
+        <CardHeader>
+          <CardTitle className="text-lg font-medium flex items-center gap-2">
+            <span className="text-xl">📊</span>
+            {t('billing.chargesAndTax')}
+          </CardTitle>
+          <CardDescription>{t('billing.chargesAndTaxHelp')}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid gap-4 md:grid-cols-2">
+            <div className="space-y-2">
+              <Label htmlFor="makingCharges" className="text-sm font-medium">
+                {t('billing.makingChargesPercent')}
+              </Label>
+              <Input
+                id="makingCharges"
+                type="number"
+                value={makingChargesPercent}
+                onChange={(e) => setMakingChargesPercent(Number(e.target.value))}
+                className="bg-white"
+                placeholder="10"
+              />
+              <p className="text-xs text-muted-foreground">
+                {t('billing.percentageOfSubtotal')}
+              </p>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="gstPercentage" className="text-sm font-medium">
+                {t('billing.gstPercent')}
+              </Label>
+              <Input
+                id="gstPercentage"
+                type="number"
+                value={gstPercent}
+                onChange={(e) => setGstPercent(Number(e.target.value))}
+                className="bg-white"
+                placeholder="3"
+              />
+              <p className="text-xs text-muted-foreground">
+                {t('billing.percentageOfTotal')}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Payment Method */}
+      <Card className="hover:shadow-lg transition-shadow border-0 bg-gradient-to-br from-white to-gray-50">
+        <CardHeader>
+          <CardTitle className="text-lg font-medium flex items-center gap-2">
+            <span className="text-xl">💳</span>
+            {t('billing.paymentMethod')}
+          </CardTitle>
+          <CardDescription>{t('bills.paymentMethod')}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+            <SelectTrigger className="bg-white">
+              <SelectValue placeholder={t('billing.selectPaymentMethod')} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="cash">{t('bills.payment.cash')}</SelectItem>
+              <SelectItem value="card">{t('bills.payment.card')}</SelectItem>
+              <SelectItem value="upi">{t('bills.payment.upi')}</SelectItem>
+            </SelectContent>
+          </Select>
+        </CardContent>
+      </Card>
+
+      {/* Cart Summary */}
+      <Card className="hover:shadow-lg transition-shadow border-0 bg-gradient-to-br from-white to-gray-50">
+        <CardHeader>
+          <CardTitle className="text-lg font-medium flex items-center gap-2">
+            <span className="text-xl">🛍️</span>
+            {t('billing.cartSummary')}
+          </CardTitle>
+          <CardDescription>
+            {cartItems.length === 0 ? t('billing.noItems') : t('billing.cartItems')}
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          {cartItems.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-8 text-center">
+              <ShoppingCart className="h-12 w-12 text-muted-foreground mb-4" />
+              <p className="text-lg font-medium text-muted-foreground mb-4">
+                {t('billing.emptyCart')}
+              </p>
+              <Button
+                variant="outline"
+                onClick={() => setShowProductBrowser(true)}
+                className="hover:bg-gray-100"
+              >
+                {t('billing.browseProducts')}
+              </Button>
+            </div>
+          ) : (
+            <ScrollArea className="h-[400px] pr-4">
+              <div className="space-y-4">
+                {cartItems.map((item, index) => (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between border-b pb-4 last:border-0"
+                  >
+                    <div className="space-y-1">
+                      <p className="font-medium">{item["Product Name"]}</p>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Badge variant="secondary" className="font-normal">
+                          {item["Metal Type"] || t('common.none')}
+                        </Badge>
+                        <span>•</span>
+                        <span>{t('products.weight')}: {item["Weight (g)"]}g</span>
+                        {item.Carat && (
+                          <>
+                            <span>•</span>
+                            <span>{t('products.carat')}: {item.Carat}</span>
+                          </>
+                        )}
+                        {item.Quantity && (
+                          <>
+                            <span>•</span>
+                            <span>{t('products.quantity')}: {item.cartQuantity}</span>
+                          </>
+                        )}
                       </div>
-                      <Button 
-                        size="sm" 
-                        onClick={() => addToCart(product)}
-                        disabled={product.Quantity === 0 || calculatedRate === 0}
+                      <div className="text-sm text-muted-foreground">
+                        {t('metalRates.perGram')}: ₹{(item.calculatedRate / item["Weight (g)"]).toFixed(2)}
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-medium">{t('billing.total')}: ₹{(item.calculatedRate * item.cartQuantity).toFixed(2)}</p>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => removeFromCart(item["Product ID"])}
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
                       >
-                        Add to Cart
+                        {t('products.remove')}
                       </Button>
                     </div>
-                  );
-                })}
+                  </div>
+                ))}
               </div>
-            </CardContent>
-          </Card>
+            </ScrollArea>
+          )}
+        </CardContent>
+      </Card>
 
-          {/* ... keep existing code (Cart Items Card) */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('billing.cartItems')}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              {cartItems.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">{t('billing.noItemsInCart')}</p>
-              ) : (
-                <div className="space-y-4">
-                  {cartItems.map((item) => (
-                    <div key={item["Product ID"]} className="flex items-center justify-between p-4 border rounded-lg">
-                      <div className="flex-1">
-                        <h4 className="font-medium">{item["Product Name"]}</h4>
-                        <p className="text-sm text-muted-foreground">
-                          ₹{item.calculatedRate.toLocaleString()} per item
-                        </p>
-                      </div>
-                      <div className="flex items-center space-x-4">
-                        <div className="flex items-center space-x-2">
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => updateCartQuantity(item["Product ID"], item.cartQuantity - 1)}
-                          >
-                            -
-                          </Button>
-                          <span className="w-8 text-center">{item.cartQuantity}</span>
-                          <Button 
-                            size="sm" 
-                            variant="outline"
-                            onClick={() => updateCartQuantity(item["Product ID"], item.cartQuantity + 1)}
-                            disabled={item.cartQuantity >= item.Quantity}
-                          >
-                            +
-                          </Button>
-                        </div>
-                        <p className="font-medium w-24 text-right">
-                          ₹{(item.calculatedRate * item.cartQuantity).toLocaleString()}
-                        </p>
-                        <Button 
-                          size="sm" 
-                          variant="destructive"
-                          onClick={() => removeFromCart(item["Product ID"])}
-                        >
-                          {t('common.delete')}
-                        </Button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+      {/* Validation Alerts */}
+      {formSubmitted && (
+        <div className="space-y-4">
+          {cartItems.length === 0 && (
+            <Alert variant="destructive" className="border-red-200 bg-red-50">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>{t('billing.errors.title')}</AlertTitle>
+              <AlertDescription>{t('billing.errors.emptyCart')}</AlertDescription>
+            </Alert>
+          )}
+          {cartItems.length > 0 && (!customerInfo.name || !customerInfo.phone) && (
+            <Alert variant="destructive" className="border-red-200 bg-red-50">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>{t('billing.errors.title')}</AlertTitle>
+              <AlertDescription>{t('billing.errors.customerInfo')}</AlertDescription>
+            </Alert>
+          )}
+          {cartItems.some(item => item["Metal Type"]?.toLowerCase().includes("gold")) && !goldPrice && (
+            <Alert variant="destructive" className="border-red-200 bg-red-50">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>{t('billing.errors.title')}</AlertTitle>
+              <AlertDescription>{t('billing.errors.goldPrice')}</AlertDescription>
+            </Alert>
+          )}
+          {cartItems.some(item => item["Metal Type"]?.toLowerCase().includes("silver")) && !silverPrice && (
+            <Alert variant="destructive" className="border-red-200 bg-red-50">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>{t('billing.errors.title')}</AlertTitle>
+              <AlertDescription>{t('billing.errors.silverPrice')}</AlertDescription>
+            </Alert>
+          )}
         </div>
+      )}
 
-        {/* Billing Summary */}
-        <div className="space-y-6">
-          {/* ... keep existing code (Customer Info, Making Charges, Bill Summary Cards) */}
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('billing.customerInformation')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="customer-name">{t('customers.customerName')}</Label>
-                <Input
-                  id="customer-name"
-                  value={customerInfo.name}
-                  onChange={(e) => setCustomerInfo({...customerInfo, name: e.target.value})}
-                  placeholder={t('billing.customerNamePlaceholder')}
-                />
-              </div>
-              <div>
-                <Label htmlFor="customer-phone">{t('customers.phone')}</Label>
-                <Input
-                  id="customer-phone"
-                  value={customerInfo.phone}
-                  onChange={(e) => setCustomerInfo({...customerInfo, phone: e.target.value})}
-                  placeholder={t('billing.phoneNumberPlaceholder')}
-                />
-              </div>
-              <div>
-                <Label htmlFor="customer-email">{t('customers.email')} ({t('billing.optional')})</Label>
-                <Input
-                  id="customer-email"
-                  type="email"
-                  value={customerInfo.email}
-                  onChange={(e) => setCustomerInfo({...customerInfo, email: e.target.value})}
-                  placeholder={t('billing.emailAddressPlaceholder')}
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>Additional Charges</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div>
-                <Label htmlFor="making-charges">Making Charges (%)</Label>
-                <Input
-                  id="making-charges"
-                  type="number"
-                  value={makingChargesPercent}
-                  onChange={(e) => setMakingChargesPercent(Number(e.target.value))}
-                  placeholder="Enter making charges percentage"
-                />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle>{t('billing.billSummary')}</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <span>{t('billing.subtotal')}:</span>
-                  <span>₹{subtotal.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Making Charges ({makingChargesPercent}%):</span>
-                  <span>₹{makingCharges.toLocaleString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>{t('billing.gst')} ({gstPercent}%):</span>
-                  <span>₹{gstAmount.toLocaleString()}</span>
-                </div>
-                <Separator />
-                <div className="flex justify-between font-bold text-lg">
-                  <span>{t('billing.total')}:</span>
-                  <span>₹{total.toLocaleString()}</span>
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label>{t('bills.paymentMethod')}</Label>
-                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="cash">{t('bills.payment.cash')}</SelectItem>
-                    <SelectItem value="card">{t('bills.payment.card')}</SelectItem>
-                    <SelectItem value="upi">{t('bills.payment.upi')}</SelectItem>
-                    <SelectItem value="cheque">{t('billing.cheque')}</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="space-y-3 pt-4">
-                <Button 
-                  className="w-full bg-green-600 hover:bg-green-700"
-                  onClick={handleCompleteSale}
-                  disabled={cartItems.length === 0}
+      {/* Action Buttons */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:justify-end">
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+                <Button
+                  variant="outline"
+                  onClick={handleDownloadInvoice}
+                  disabled={!canProceedWithSale()}
+                  className="w-full sm:w-auto hover:bg-gray-100"
                 >
-                  {t('billing.completeSale')}
+                  <Download className="mr-2 h-4 w-4" />
+                  {t('common.download')}
                 </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full"
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{t('whatsapp.tips.pdfMention')}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+                <Button
+                  variant="outline"
                   onClick={handleSendWhatsApp}
-                  disabled={!completedBill}
+                  disabled={!canProceedWithSale()}
+                  className="w-full sm:w-auto hover:bg-gray-100"
                 >
-                  {t('billing.sendViaWhatsApp')}
+                  <MessageSquare className="mr-2 h-4 w-4" />
+                  {t('whatsapp.sendInvoice')}
                 </Button>
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={handlePrintReceipt}
-                  disabled={!completedBill}
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{t('whatsapp.tips.openWhatsApp')}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
+
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span>
+                <Button
+                  onClick={handleCompleteSale}
+                  disabled={!canProceedWithSale()}
+                  className="w-full sm:w-auto bg-gradient-to-r from-yellow-400 to-yellow-500 hover:from-yellow-500 hover:to-yellow-600 text-primary shadow-sm"
                 >
-                  {t('billing.printReceipt')}
+                  {t('billing.generateBill')}
                 </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+              </span>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p>{t('billing.generateBill')}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
+
+      <ProductBrowser
+        open={showProductBrowser}
+        onClose={() => setShowProductBrowser(false)}
+        onAddToCart={handleAddProduct}
+      />
     </div>
   );
-}
+};
+
+export default BillingSystem;

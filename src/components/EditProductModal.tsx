@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -6,14 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useTranslation } from 'react-i18next';
 import { useAppContext } from "@/contexts/AppContext";
 import { Product } from "@/services/supabaseApi";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 
 export default function EditProductModal() {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const { showEditProductModal, setShowEditProductModal, updateProduct, editingProduct, isLoading } = useAppContext();
   const { toast } = useToast();
 

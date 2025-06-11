@@ -1,16 +1,16 @@
-
 import { useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useTranslation } from 'react-i18next';
 import { useAppContext } from "@/contexts/AppContext";
 import { Customer } from "@/services/supabaseApi";
+import { toast } from "@/components/ui/use-toast";
 
 export default function AddCustomerModal() {
-  const { t } = useLanguage();
+  const { t } = useTranslation();
   const { showAddCustomerModal, setShowAddCustomerModal, addCustomer, isLoading } = useAppContext();
 
   const [formData, setFormData] = useState({
@@ -21,12 +21,21 @@ export default function AddCustomerModal() {
     status: "New"
   });
 
-  const statusOptions = ["New", "Regular", "VIP"];
+  const statusOptions = [
+    { value: "New", label: t('customers.status.new') },
+    { value: "Regular", label: t('customers.status.regular') },
+    { value: "VIP", label: t('customers.status.vip') }
+  ];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (!formData.customerId || !formData.name) {
+      toast({
+        title: t('common.error'),
+        description: t('customers.validation.requiredFields'),
+        variant: "destructive",
+      });
       return;
     }
 
@@ -57,7 +66,7 @@ export default function AddCustomerModal() {
 
   return (
     <Dialog open={showAddCustomerModal} onOpenChange={setShowAddCustomerModal}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{t('customers.addNew')}</DialogTitle>
         </DialogHeader>
@@ -65,25 +74,25 @@ export default function AddCustomerModal() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="customerId">Customer ID *</Label>
+              <Label htmlFor="customerId">{t('customers.customerId')} *</Label>
               <Input
                 id="customerId"
                 value={formData.customerId}
                 onChange={(e) => setFormData({ ...formData, customerId: e.target.value })}
                 required
-                placeholder="C001"
+                placeholder={t('customers.customerIdPlaceholder')}
               />
             </div>
             <div>
-              <Label htmlFor="status">Status</Label>
+              <Label htmlFor="status">{t('customers.status.label')}</Label>
               <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select status" />
+                  <SelectValue placeholder={t('customers.status.select')} />
                 </SelectTrigger>
                 <SelectContent>
                   {statusOptions.map((status) => (
-                    <SelectItem key={status} value={status}>
-                      {status}
+                    <SelectItem key={status.value} value={status.value}>
+                      {status.label}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -92,43 +101,43 @@ export default function AddCustomerModal() {
           </div>
 
           <div>
-            <Label htmlFor="name">Full Name *</Label>
+            <Label htmlFor="name">{t('customers.customerName')} *</Label>
             <Input
               id="name"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
               required
-              placeholder="Enter customer name"
+              placeholder={t('customers.customerNamePlaceholder')}
             />
           </div>
 
           <div>
-            <Label htmlFor="phone">Phone Number</Label>
+            <Label htmlFor="phone">{t('customers.phone')}</Label>
             <Input
               id="phone"
               value={formData.phone}
               onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-              placeholder="Enter phone number"
+              placeholder={t('customers.phonePlaceholder')}
             />
           </div>
 
           <div>
-            <Label htmlFor="email">Email Address</Label>
+            <Label htmlFor="email">{t('customers.email')}</Label>
             <Input
               id="email"
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              placeholder="Enter email address"
+              placeholder={t('customers.emailPlaceholder')}
             />
           </div>
 
           <div className="flex gap-2 pt-4">
             <Button type="button" variant="outline" onClick={handleClose} className="flex-1">
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={isLoading} className="flex-1">
-              {isLoading ? "Adding..." : "Add Customer"}
+              {isLoading ? t('customers.adding') : t('customers.add')}
             </Button>
           </div>
         </form>

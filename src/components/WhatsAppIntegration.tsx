@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -7,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Bill } from "@/services/supabaseApi";
+import { useTranslation } from 'react-i18next';
 
 interface WhatsAppIntegrationProps {
   bill?: Bill;
@@ -14,6 +14,7 @@ interface WhatsAppIntegrationProps {
 }
 
 export default function WhatsAppIntegration({ bill, customerPhone }: WhatsAppIntegrationProps) {
+  const { t } = useTranslation();
   const [phoneNumber, setPhoneNumber] = useState(customerPhone || "");
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -251,8 +252,8 @@ Thank you for choosing GemSpark Jewelry! ✨
     } catch (error) {
       console.error('Error sending WhatsApp message:', error);
       toast({
-        title: "Error",
-        description: "Failed to open WhatsApp",
+        title: t('whatsapp.errors.title'),
+        description: t('whatsapp.errors.failedToOpen'),
         variant: "destructive",
       });
     } finally {
@@ -262,7 +263,7 @@ Thank you for choosing GemSpark Jewelry! ✨
 
   const handlePreviewMessage = () => {
     if (bill && !message.trim()) {
-      const previewMessage = `*GemSpark Jewelry Invoice Preview*\n\nInvoice: ${bill["Bill No"]}\nCustomer: ${bill["Customer Name"]}\nTotal: ₹${bill["Total Amount"]}\n\n(Full details will be included when sent)`;
+      const previewMessage = `*${t('whatsapp.preview.title')}*\n\n${t('whatsapp.preview.invoice')}: ${bill["Bill No"]}\n${t('whatsapp.preview.customer')}: ${bill["Customer Name"]}\n${t('whatsapp.preview.total')}: ₹${bill["Total Amount"]}\n\n(${t('whatsapp.preview.fullDetails')})`;
       setMessage(previewMessage);
     }
   };
@@ -273,40 +274,40 @@ Thank you for choosing GemSpark Jewelry! ✨
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-lg">
             <span className="text-green-600">📱</span>
-            WhatsApp Integration
+            {t('whatsapp.title')}
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent>
           <div className="grid grid-cols-1 gap-4">
             <div>
-              <Label htmlFor="phone" className="text-sm font-medium">Phone Number *</Label>
+              <Label htmlFor="phone" className="text-sm font-medium">{t('whatsapp.phoneNumber')} *</Label>
               <Input
                 id="phone"
                 type="tel"
                 value={phoneNumber}
                 onChange={(e) => setPhoneNumber(e.target.value)}
-                placeholder="+91 98765 43210"
+                placeholder={t('whatsapp.phoneNumberPlaceholder')}
                 className="w-full mt-1"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Enter phone number with or without country code
+                {t('whatsapp.phoneNumberHelp')}
               </p>
             </div>
 
             <div>
-              <Label htmlFor="message" className="text-sm font-medium">Custom Message (Optional)</Label>
+              <Label htmlFor="message" className="text-sm font-medium">{t('whatsapp.customMessage')}</Label>
               <Textarea
                 id="message"
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Add custom message or leave empty for auto-generated invoice message..."
+                placeholder={t('whatsapp.customMessagePlaceholder')}
                 rows={6}
                 className="w-full mt-1 resize-none"
               />
             </div>
           </div>
 
-          <div className="flex flex-col sm:flex-row gap-2">
+          <div className="flex flex-col sm:flex-row gap-2 mt-4">
             {bill && (
               <Button
                 type="button"
@@ -315,7 +316,7 @@ Thank you for choosing GemSpark Jewelry! ✨
                 className="flex-1"
                 size="sm"
               >
-                Preview Message
+                {t('whatsapp.previewMessage')}
               </Button>
             )}
             <Button
@@ -324,14 +325,14 @@ Thank you for choosing GemSpark Jewelry! ✨
               className="flex-1 bg-green-600 hover:bg-green-700 text-white"
               size="sm"
             >
-              {isLoading ? "Opening..." : "Send Invoice via WhatsApp"}
+              {isLoading ? t('whatsapp.sending') : t('whatsapp.sendInvoice')}
             </Button>
           </div>
 
-          <div className="text-xs text-muted-foreground space-y-1 bg-gray-50 p-3 rounded">
-            <p>• This opens WhatsApp with invoice details ready to send</p>
-            <p>• PDF invoice will be mentioned in the message</p>
-            <p>• Make sure WhatsApp is installed on your device</p>
+          <div className="mt-4 space-y-1 text-sm text-muted-foreground">
+            <p>{t('whatsapp.tips.openWhatsApp')}</p>
+            <p>{t('whatsapp.tips.pdfMention')}</p>
+            <p>{t('whatsapp.tips.installWhatsApp')}</p>
           </div>
         </CardContent>
       </Card>

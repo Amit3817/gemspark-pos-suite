@@ -1,11 +1,12 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { useNavigate } from "react-router-dom";
 import { useAppContext } from "@/contexts/AppContext";
+import { useNavigate } from "react-router-dom";
 import SampleDataLoader from "./SampleDataLoader";
+import { ShoppingCart, BarChart, Users, Package } from "lucide-react";
+import MetalRatesDisplay from "./MetalRatesDisplay";
 
 export default function Dashboard() {
   const { t } = useLanguage();
@@ -38,26 +39,69 @@ export default function Dashboard() {
 
   const totalCustomers = customers.length;
 
+  if (isLoadingProducts || isLoadingBills || isLoadingCustomers) {
+    return (
+      <div className="space-y-6">
+        <div className="flex justify-center items-center py-12">
+          <p className="text-muted-foreground">{t('dashboard.loading')}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Calculate percentage changes (placeholder for now)
+  const calculateChange = (current: number, previous: number) => {
+    if (!previous) return "+0%";
+    const change = ((current - previous) / previous) * 100;
+    return `${change >= 0 ? '+' : ''}${change.toFixed(1)}%`;
+  };
+
+  // TODO: Replace with real data from API
+  const previousSales = 0; // This should come from historical data
+  const previousProducts = 0;
+  const previousCustomers = 0;
+
   const stats = [
-    { title: t('dashboard.todaySales'), value: `₹${todaySales.toLocaleString()}`, change: "+12.5%", color: "text-green-600" },
-    { title: t('dashboard.totalProducts'), value: totalProducts.toString(), change: "+3.2%", color: "text-blue-600" },
-    { title: t('dashboard.lowStock'), value: lowStockCount.toString(), change: `+${lowStockCount} items`, color: "text-yellow-600" },
-    { title: t('dashboard.totalCustomers'), value: totalCustomers.toString(), change: "+8.1%", color: "text-purple-600" },
+    { 
+      title: t('dashboard.todaySales'), 
+      value: `₹${todaySales.toLocaleString()}`, 
+      change: calculateChange(todaySales, previousSales), 
+      color: "text-green-600" 
+    },
+    { 
+      title: t('dashboard.totalProducts'), 
+      value: totalProducts.toString(), 
+      change: calculateChange(totalProducts, previousProducts), 
+      color: "text-blue-600" 
+    },
+    { 
+      title: t('dashboard.lowStock'), 
+      value: lowStockCount.toString(), 
+      change: `${lowStockCount} ${t('dashboard.items')}`, 
+      color: "text-yellow-600" 
+    },
+    { 
+      title: t('dashboard.totalCustomers'), 
+      value: totalCustomers.toString(), 
+      change: calculateChange(totalCustomers, previousCustomers), 
+      color: "text-purple-600" 
+    },
   ];
 
+  // TODO: Replace with real market data from API
   const marketPrices = [
     { 
       metal: t('dashboard.goldPrice'), 
-      price: "₹6,890", 
-      change: "+2.3%", 
+      price: "₹6,890", // This should come from API
+      change: "+2.3%", // This should be calculated from API data
       changeColor: "text-green-600",
       bgColor: "bg-gradient-to-r from-yellow-100 to-yellow-200",
       icon: "🟡"
     },
     { 
       metal: t('dashboard.silverPrice'), 
-      price: "₹850", 
-      change: "-1.2%", 
+      price: "₹850", // This should come from API
+      change: "-1.2%", // This should be calculated from API data
       changeColor: "text-red-600",
       bgColor: "bg-gradient-to-r from-gray-100 to-gray-200",
       icon: "⚪"
@@ -71,16 +115,6 @@ export default function Dashboard() {
     amount: `₹${(bill["Total Amount"] || 0).toLocaleString()}`,
     time: new Date().toLocaleTimeString()
   }));
-
-  if (isLoadingProducts || isLoadingBills || isLoadingCustomers) {
-    return (
-      <div className="space-y-6">
-        <div className="flex justify-center items-center py-12">
-          <p className="text-muted-foreground">Loading dashboard data...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -101,11 +135,11 @@ export default function Dashboard() {
       {totalProducts === 0 && totalCustomers === 0 && bills.length === 0 && (
         <Card className="border-2 border-blue-300 bg-blue-50">
           <CardHeader>
-            <CardTitle className="text-blue-800">Welcome to your Jewelry POS System!</CardTitle>
+            <CardTitle className="text-blue-800">{t('dashboard.welcome.title')}</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-blue-700 mb-4">
-              Your database is empty. Load some sample data to get started and see how the system works.
+              {t('dashboard.welcome.empty')}
             </p>
             <SampleDataLoader />
           </CardContent>
@@ -117,7 +151,7 @@ export default function Dashboard() {
         <CardHeader className="pb-3">
           <CardTitle className="flex items-center gap-2 text-xl">
             📈 {t('dashboard.marketPrices')}
-            <Badge variant="secondary" className="ml-auto animate-pulse">LIVE</Badge>
+            <Badge variant="secondary" className="ml-auto animate-pulse">{t('dashboard.marketPrices.live')}</Badge>
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -193,7 +227,7 @@ export default function Dashboard() {
                 ))
               ) : (
                 <div className="text-center py-4">
-                  <p className="text-muted-foreground">No recent sales data available</p>
+                  <p className="text-muted-foreground">{t('dashboard.noRecentSales')}</p>
                 </div>
               )}
             </div>
@@ -227,7 +261,7 @@ export default function Dashboard() {
                 ))
               ) : (
                 <div className="text-center py-4">
-                  <p className="text-muted-foreground">No low stock items</p>
+                  <p className="text-muted-foreground">{t('dashboard.noLowStock')}</p>
                 </div>
               )}
             </div>
@@ -272,7 +306,7 @@ export default function Dashboard() {
               onClick={() => navigate('/reports')}
             >
               <span className="text-2xl">📊</span>
-              <span>View Reports</span>
+              <span>{t('dashboard.viewReports')}</span>
             </Button>
           </div>
         </CardContent>

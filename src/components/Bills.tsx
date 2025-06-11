@@ -1,84 +1,90 @@
-
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLanguage } from "@/contexts/LanguageContext";
-import { Bill } from "@/services/supabaseApi";
-import { useToast } from "@/hooks/use-toast";
 import { useAppContext } from "@/contexts/AppContext";
+import { useToast } from "@/components/ui/use-toast";
 import WhatsAppIntegration from "./WhatsAppIntegration";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Search, Printer, Eye, Trash2 } from "lucide-react";
+import { Bill } from "@/services/supabaseApi";
 
 export default function Bills() {
-  const [searchTerm, setSearchTerm] = useState("");
+  const { t } = useLanguage();
+  const { bills, isLoadingBills, refreshData, deleteBill } = useAppContext();
+  const { toast } = useToast();
+  const [searchQuery, setSearchQuery] = useState("");
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
   const [showWhatsApp, setShowWhatsApp] = useState(false);
-  const { t } = useLanguage();
-  const { toast } = useToast();
-  const { bills, isLoadingBills, refreshData, deleteBill } = useAppContext();
+  const [showBillDetails, setShowBillDetails] = useState(false);
+  const [billToDelete, setBillToDelete] = useState<string | null>(null);
 
   console.log('Bills component - data:', bills);
 
   const filteredBills = bills.filter((bill: Bill) =>
-    bill["Bill No"].toLowerCase().includes(searchTerm.toLowerCase()) ||
-    bill["Customer Name"].toLowerCase().includes(searchTerm.toLowerCase()) ||
-    bill["Phone Number"].toString().includes(searchTerm) ||
-    bill["Date"].toString().includes(searchTerm)
+    bill["Bill No"].toLowerCase().includes(searchQuery.toLowerCase()) ||
+    bill["Customer Name"].toLowerCase().includes(searchQuery.toLowerCase()) ||
+    bill["Phone Number"].toString().includes(searchQuery) ||
+    bill["Date"].toString().includes(searchQuery)
   );
 
   const handleViewDetails = (bill: Bill) => {
-    toast({
-      title: "Bill Details",
-      description: `Viewing details for bill ${bill["Bill No"]}`,
-    });
-    console.log('Viewing bill details:', bill);
+    setSelectedBill(bill);
+    setShowBillDetails(true);
   };
 
-  const handlePrintBill = (bill: Bill) => {
-    const printWindow = window.open('', '_blank');
-    if (printWindow) {
+  const handlePrintBill = async (bill: Bill) => {
+    try {
+      // Generate PDF
+      const pdfDataUrl = await generateBillPDF(bill);
+      
+      // Create a new window for printing
+      const printWindow = window.open('', '_blank');
+      if (!printWindow) {
+        throw new Error('Popup blocked. Please allow popups for this site.');
+      }
+
+      // Write the PDF to the new window
       printWindow.document.write(`
         <html>
           <head>
-            <title>Receipt - ${bill["Bill No"]}</title>
+            <title>Bill ${bill["Bill No"]}</title>
             <style>
-              body { font-family: Arial, sans-serif; margin: 20px; }
-              .header { text-align: center; margin-bottom: 20px; }
-              .details { margin: 10px 0; }
-              .total { font-weight: bold; font-size: 18px; }
+              body { margin: 0; }
+              iframe { width: 100%; height: 100vh; border: none; }
             </style>
           </head>
           <body>
-            <div class="header">
-              <h2>GemSpark Jewelry</h2>
-              <p>Receipt</p>
-            </div>
-            <div class="details">
-              <p><strong>Bill No:</strong> ${bill["Bill No"]}</p>
-              <p><strong>Date:</strong> ${new Date(bill["Date"]).toLocaleDateString()}</p>
-              <p><strong>Customer:</strong> ${bill["Customer Name"]}</p>
-              <p><strong>Phone:</strong> ${bill["Phone Number"]}</p>
-              <p><strong>Product:</strong> ${bill["Product Name"]}</p>
-              <p><strong>Metal Type:</strong> ${bill["Metal Type"]}</p>
-              <p><strong>Weight:</strong> ${bill["Weight (g)"]}g</p>
-              <p><strong>Rate per gram:</strong> ₹${bill["Rate per g"]}</p>
-              <p><strong>Making Charges:</strong> ₹${bill["Making Charges"]}</p>
-              <p><strong>GST:</strong> ${bill["GST (%)"]}%</p>
-              <p class="total"><strong>Total Amount:</strong> ₹${bill["Total Amount"]}</p>
-            </div>
+            <iframe src="${pdfDataUrl}"></iframe>
           </body>
         </html>
       `);
+      
       printWindow.document.close();
-      printWindow.print();
+      
+      // Wait for PDF to load
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 1000);
+
+      toast({
+        title: "Printing Bill",
+        description: `Bill ${bill["Bill No"]} is being printed`,
+      });
+    } catch (error) {
+      console.error('Error printing bill:', error);
+      toast({
+        title: "Error",
+        description: "Failed to print bill. Please try again.",
+        variant: "destructive",
+      });
     }
-    
-    toast({
-      title: "Receipt Printed",
-      description: "Receipt has been sent to printer",
-    });
   };
 
   const handleSendWhatsApp = (bill: Bill) => {
@@ -95,8 +101,20 @@ export default function Bills() {
   };
 
   const handleDeleteBill = async (billNo: string) => {
-    if (window.confirm('Are you sure you want to delete this bill?')) {
+    try {
       await deleteBill(billNo);
+      toast({
+        title: "Bill Deleted",
+        description: `Bill ${billNo} has been deleted successfully`,
+      });
+      setBillToDelete(null);
+    } catch (error) {
+      console.error('Error deleting bill:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete bill. Please try again.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -170,8 +188,8 @@ export default function Bills() {
       <div className="flex flex-col sm:flex-row gap-4">
         <Input
           placeholder={t('bills.search')}
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
           className="w-full sm:max-w-md"
         />
       </div>
@@ -195,6 +213,68 @@ export default function Bills() {
           </CardContent>
         </Card>
       )}
+
+      {/* Bill Details Dialog */}
+      <Dialog open={showBillDetails} onOpenChange={setShowBillDetails}>
+        <DialogContent className="max-w-3xl max-h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>Bill Details - {selectedBill?.["Bill No"]}</DialogTitle>
+            <DialogDescription>
+              Detailed information about the bill
+            </DialogDescription>
+          </DialogHeader>
+          <ScrollArea className="max-h-[60vh]">
+            {selectedBill && (
+              <div className="space-y-4 p-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <h3 className="font-semibold text-sm text-muted-foreground">Customer Information</h3>
+                    <p className="mt-1">Name: {selectedBill["Customer Name"]}</p>
+                    <p>Phone: {selectedBill["Phone Number"]}</p>
+                    <p>Date: {new Date(selectedBill["Date"]).toLocaleDateString()}</p>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-sm text-muted-foreground">Product Details</h3>
+                    <p className="mt-1">Product: {selectedBill["Product Name"]}</p>
+                    <p>Metal: {selectedBill["Metal Type"]}</p>
+                    <p>Weight: {selectedBill["Weight (g)"]}g</p>
+                    <p>Rate: ₹{selectedBill["Rate per g"]}/g</p>
+                  </div>
+                </div>
+                <div className="border-t pt-4">
+                  <h3 className="font-semibold text-sm text-muted-foreground">Amount Details</h3>
+                  <div className="mt-2 space-y-1">
+                    <p>Making Charges: ₹{selectedBill["Making Charges"]}</p>
+                    <p>GST ({selectedBill["GST (%)"]}%): ₹{selectedBill["GST Amount"]}</p>
+                    <p className="font-bold text-lg">Total Amount: ₹{selectedBill["Total Amount"]}</p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </ScrollArea>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!billToDelete} onOpenChange={(open) => !open && setBillToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete bill {billToDelete} and remove it from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => billToDelete && handleDeleteBill(billToDelete)}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       {/* Bills Table */}
       <Card>
@@ -263,7 +343,7 @@ export default function Bills() {
                           size="sm" 
                           variant="destructive" 
                           className="text-xs hidden xl:inline-flex"
-                          onClick={() => handleDeleteBill(bill["Bill No"])}
+                          onClick={() => setBillToDelete(bill["Bill No"])}
                         >
                           Delete
                         </Button>

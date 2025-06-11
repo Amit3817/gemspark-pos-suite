@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { useLanguage } from "@/contexts/LanguageContext";
+import { useLanguage } from '@/contexts/LanguageContext';
 import { useAppContext } from "@/contexts/AppContext";
 import { Product } from "@/services/supabaseApi";
 import { supabase } from "@/integrations/supabase/client";
@@ -90,8 +90,8 @@ export default function AddProductModal() {
     
     if (!formData.productId || !formData.productName || !formData.category) {
       toast({
-        title: "Error",
-        description: "Please fill in all required fields",
+        title: t('common.error'),
+        description: t('products.validation.requiredFields'),
         variant: "destructive",
       });
       return;
@@ -150,23 +150,24 @@ export default function AddProductModal() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="productId">Product ID *</Label>
+              <Label htmlFor="productId">{t('products.productId')} *</Label>
               <Input
                 id="productId"
                 value={formData.productId}
                 onChange={(e) => setFormData({ ...formData, productId: e.target.value })}
                 required
+                placeholder={t('products.productIdPlaceholder')}
               />
             </div>
             <div>
-              <Label htmlFor="category">Category *</Label>
+              <Label htmlFor="category">{t('products.category')} *</Label>
               <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
+                  <SelectValue placeholder={t('products.selectCategory')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {allCategories.map((category) => (
-                    <SelectItem key={category} value={category}>
+                  {allCategories.map((category, index) => (
+                    <SelectItem key={`category-${category}-${index}`} value={category}>
                       {category}
                     </SelectItem>
                   ))}
@@ -176,17 +177,18 @@ export default function AddProductModal() {
           </div>
 
           <div>
-            <Label htmlFor="productName">Product Name *</Label>
+            <Label htmlFor="productName">{t('products.productNameLabel')} *</Label>
             <Input
               id="productName"
               value={formData.productName}
               onChange={(e) => setFormData({ ...formData, productName: e.target.value })}
               required
+              placeholder={t('products.productNamePlaceholder')}
             />
           </div>
 
           <div>
-            <Label htmlFor="image">Product Image</Label>
+            <Label htmlFor="image">{t('products.image')}</Label>
             <Input
               id="image"
               type="file"
@@ -198,7 +200,7 @@ export default function AddProductModal() {
               <div className="mt-2">
                 <img 
                   src={imagePreview} 
-                  alt="Preview" 
+                  alt={t('products.imagePreview')} 
                   className="w-20 h-20 object-cover rounded border"
                 />
               </div>
@@ -207,14 +209,14 @@ export default function AddProductModal() {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="metalType">Metal Type</Label>
+              <Label htmlFor="metalType">{t('products.metalType')}</Label>
               <Select value={formData.metalType} onValueChange={(value) => setFormData({ ...formData, metalType: value })}>
                 <SelectTrigger>
-                  <SelectValue placeholder="Select metal" />
+                  <SelectValue placeholder={t('products.selectMetal')} />
                 </SelectTrigger>
                 <SelectContent>
-                  {metalTypes.map((metal) => (
-                    <SelectItem key={metal} value={metal}>
+                  {metalTypes.map((metal, index) => (
+                    <SelectItem key={`metal-${metal}-${index}`} value={metal}>
                       {metal}
                     </SelectItem>
                   ))}
@@ -222,54 +224,56 @@ export default function AddProductModal() {
               </Select>
             </div>
             <div>
-              <Label htmlFor="carat">Carat</Label>
+              <Label htmlFor="carat">{t('products.carat')}</Label>
               <Input
                 id="carat"
                 value={formData.carat}
                 onChange={(e) => setFormData({ ...formData, carat: e.target.value })}
-                placeholder="e.g., 22K, 18K"
+                placeholder={t('products.caratPlaceholder')}
               />
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="weight">Weight (g)</Label>
+              <Label htmlFor="weight">{t('products.weight')}</Label>
               <Input
                 id="weight"
                 type="number"
                 step="0.01"
                 value={formData.weight}
                 onChange={(e) => setFormData({ ...formData, weight: e.target.value })}
+                placeholder={t('products.weightPlaceholder')}
               />
             </div>
             <div>
-              <Label htmlFor="quantity">Quantity</Label>
+              <Label htmlFor="quantity">{t('products.quantity')}</Label>
               <Input
                 id="quantity"
                 type="number"
                 value={formData.quantity}
                 onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                placeholder={t('products.quantityPlaceholder')}
               />
             </div>
           </div>
 
           <div>
-            <Label htmlFor="notes">Notes</Label>
+            <Label htmlFor="notes">{t('products.notes')}</Label>
             <Textarea
               id="notes"
               value={formData.notes}
               onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-              placeholder="Additional notes..."
+              placeholder={t('products.notesPlaceholder')}
             />
           </div>
 
           <div className="flex gap-2 pt-4">
             <Button type="button" variant="outline" onClick={handleClose} className="flex-1">
-              Cancel
+              {t('common.cancel')}
             </Button>
             <Button type="submit" disabled={isLoading} className="flex-1">
-              {isLoading ? "Adding..." : "Add Product"}
+              {isLoading ? t('products.adding') : t('products.add')}
             </Button>
           </div>
         </form>
